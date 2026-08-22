@@ -172,10 +172,47 @@ function AppContent() {
   );
 }
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('App ErrorBoundary caught:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#0B0D10] text-[#F2F1ED] flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <div className="p-4 rounded-xl bg-[#14171D] border border-[#FF5C5C]/40 text-[#FF5C5C] font-mono text-sm max-w-lg">
+            <h2 className="font-bold text-lg mb-2">FACTORY UI RESCUE MODE</h2>
+            <p className="text-xs text-[#8E96A0] mb-4">{this.state.error?.message || 'A render exception occurred.'}</p>
+            <button 
+              onClick={() => { this.setState({ hasError: false }); window.location.href = '/'; }}
+              className="px-4 py-2 rounded-lg bg-[#37E2C4] text-[#0B0D10] font-bold text-xs cursor-pointer hover:bg-[#37E2C4]/90"
+            >
+              RELOAD DASHBOARD
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
