@@ -146,19 +146,21 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
       const centerY = height / 2;
 
       // -----------------------------------------------------------
-      // INITIAL STAGE: PURE BLACK WITH CRISP PINPOINT GLOW (0% - 18% Scroll)
+      // CONTINUOUS SEAMLESS MORPH: PINPOINT -> EXPANDING 3D RIG
       // -----------------------------------------------------------
-      if (p < 0.20) {
-        const pointAlpha = Math.max(0, 1 - p / 0.16);
-        const pulseSpeed = 1.5 + (p / 0.16) * 5.0;
-        const breathe = 1 + Math.sin(time * pulseSpeed) * 0.18;
-        const pointRadius = (2.0 + (p / 0.16) * 3.5) * breathe;
-        const flareRadius = (10 + (p / 0.16) * 24) * breathe;
+      
+      // 1. PINPOINT OPTICAL EMISSION (0% - 24% Scroll)
+      if (p < 0.24) {
+        const pointAlpha = Math.max(0, 1 - p / 0.20);
+        const pulseSpeed = 1.5 + (p / 0.20) * 6.0;
+        const breathe = 1 + Math.sin(time * pulseSpeed) * 0.20;
+        const pointRadius = (2.0 + (p / 0.20) * 8.0) * breathe;
+        const flareRadius = (10 + (p / 0.20) * 80) * breathe;
 
-        // Subtle, tight pinpoint glow (minimal haze)
+        // Expanding radial energy gradient
         const glowGrad = ctx.createRadialGradient(centerX, centerY, 1, centerX, centerY, flareRadius);
-        glowGrad.addColorStop(0, `rgba(55, 226, 196, ${pointAlpha * 0.4})`);
-        glowGrad.addColorStop(0.5, `rgba(55, 226, 196, ${pointAlpha * 0.1})`);
+        glowGrad.addColorStop(0, `rgba(55, 226, 196, ${pointAlpha * 0.6})`);
+        glowGrad.addColorStop(0.4, `rgba(245, 166, 35, ${pointAlpha * 0.25})`);
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.fillStyle = glowGrad;
@@ -166,21 +168,37 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
         ctx.arc(centerX, centerY, flareRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Pin-sharp center dot
+        // Expanding diffraction shockwave rings during transition
+        if (p > 0.05) {
+          const ringProgress = (p - 0.05) / 0.19;
+          const ringRadius = ringProgress * 120;
+          const ringAlpha = (1 - ringProgress) * 0.5;
+
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, ringRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(55, 226, 196, ${ringAlpha})`;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Pin-sharp center core
         ctx.beginPath();
         ctx.arc(centerX, centerY, pointRadius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(245, 245, 245, ${pointAlpha * 0.95})`;
+        ctx.fillStyle = `rgba(250, 250, 250, ${pointAlpha * 0.98})`;
         ctx.shadowColor = '#37E2C4';
-        ctx.shadowBlur = 4;
+        ctx.shadowBlur = 8 * pointAlpha;
         ctx.fill();
         ctx.shadowBlur = 0;
       }
 
-      // -----------------------------------------------------------
-      // 3D EXPLODING MULTI-TIER RIG (STRICTLY CENTERED - NO LEFT/RIGHT SHIFT)
-      // -----------------------------------------------------------
-      if (p >= 0.12) {
-        const rigAlpha = Math.min(1, (p - 0.12) / 0.15);
+      // 2. 3D MULTI-TIER RIG EMERGENCE (Smooth Continuous Scaling from Core)
+      if (p >= 0.05) {
+        // Hermite smooth step for scale & opacity
+        const tScale = Math.min(1, Math.max(0, (p - 0.05) / 0.15));
+        const smoothScaleFactor = tScale * tScale * (3 - 2 * tScale); // 0.0 -> 1.0
+        const rigAlpha = Math.min(1, Math.max(0, (p - 0.05) / 0.13));
 
         if (isAutoRotating) {
           mouseRef.current.targetRotY += 0.005;
@@ -191,10 +209,12 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
         const rotX = mouseRef.current.rotX;
         const rotY = mouseRef.current.rotY;
 
-        // NO HORIZONTAL PAN: Rig is locked strictly to centerX!
         const rigCenterX = centerX;
         const rigCenterY = centerY + 10;
-        const baseScale = Math.min(width / 950, height / 650) * 1.05 * (0.85 + p * 0.15);
+        
+        // Continuous scale: grows smoothly from 0.05 -> 1.0 of target baseScale
+        const targetScale = Math.min(width / 950, height / 650) * 1.05 * (0.85 + p * 0.15);
+        const baseScale = targetScale * (0.05 + 0.95 * smoothScaleFactor);
 
         const project = (x: number, y: number, z: number) => {
           const cosY = Math.cos(rotY);
@@ -277,12 +297,12 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Explosion factor for opening blocks
+        // Explosion factor starts strictly at 0.00 when the rig reaches full size (p >= 0.18)
         let explodeFactor = 0;
-        if (p < 0.22) {
-          explodeFactor = ((p - 0.10) / 0.12) * 0.35;
+        if (p < 0.18) {
+          explodeFactor = 0;
         } else if (p < 0.65) {
-          explodeFactor = 0.35 + ((p - 0.22) / 0.43) * 0.65;
+          explodeFactor = Math.pow((p - 0.18) / 0.47, 1.2);
         } else if (p < 0.88) {
           explodeFactor = 1.0 - ((p - 0.65) / 0.23) * 0.9;
         } else {
