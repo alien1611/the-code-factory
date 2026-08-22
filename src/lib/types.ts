@@ -60,7 +60,7 @@ export interface TestCase {
   status: "pass" | "fail";
   message?: string;
   duration_ms?: number;
-  category?: "unit" | "integration" | "property" | "adversarial";
+  category?: "unit" | "integration" | "property" | "adversarial" | "security";
 }
 
 export interface VerificationIssue {
