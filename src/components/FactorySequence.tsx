@@ -491,47 +491,76 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
           [-70, yTop - topH - 1, 20]
         ], '#0B0D10', '#37E2C4', 1.5);
 
-        // Holographic Callouts
-        if (explodeFactor > 0.35 && !isWireframe) {
+        // Holographic Part Definition Callouts & HUD Annotations
+        if (p >= 0.16 && rigAlpha > 0.2) {
+          const calloutAlpha = Math.min(1, (p - 0.16) / 0.12) * (p > 0.85 ? Math.max(0, (0.95 - p) / 0.10) : 1);
+          
           const callouts = [
-            { text: '00 // TITANIUM-M1 INTAKE LID', sub: 'Zero-tolerance chassis', pos: [topW + 20, yTop - 10, 0], color: '#F5A623' },
-            { text: '01 // 405nm AST SCANNER', sub: 'Multi-beam diffraction grating', pos: [-topW - 20, yOptics, 0], color: '#37E2C4' },
-            { text: '02 // INVARIANT CO-PROCESSOR', sub: 'Formal contract verification', pos: [topW + 20, yInv, 0], color: '#F5A623' },
-            { text: '03 // ADVERSARIAL MATRIX', sub: '15-stage fuzzing harness', pos: [-topW - 20, yFuzz, 0], color: '#FF5C5C' },
+            { text: '00 // TITANIUM-M1 INTAKE LID', sub: 'Zero-tolerance titanium chassis', pos: [topW + 20, yTop - 10, 0], color: '#F5A623' },
+            { text: '01 // 405nm OPTICAL AST SCANNER', sub: 'Multi-beam diffraction grating', pos: [-topW - 20, yOptics, 0], color: '#37E2C4' },
+            { text: '02 // INVARIANT CO-PROCESSOR', sub: 'Formal contract verification core', pos: [topW + 20, yInv, 0], color: '#F5A623' },
+            { text: '03 // ADVERSARIAL MATRIX', sub: '15-stage fuzzing harness & race probe', pos: [-topW - 20, yFuzz, 0], color: '#FF5C5C' },
             { text: '04 // HYDRAULIC EVIDENCE ARM', sub: '1,200 PSI cryptographic seal', pos: [topW + 20, effectiveYStamp, 0], color: '#37E2C4' },
-            { text: '05 // BASE INTERCONNECT FIN', sub: 'PCIe Gen5 optical bus', pos: [-topW - 20, yBase - 15, 0], color: '#8E96A0' }
+            { text: '05 // BASE INTERCONNECT FIN', sub: 'PCIe Gen5 optical bus heatsink', pos: [-topW - 20, yBase - 15, 0], color: '#8E96A0' }
           ];
+
+          ctx.save();
+          ctx.globalAlpha = calloutAlpha;
 
           callouts.forEach((c) => {
             const anchor = project(c.pos[0] > 0 ? c.pos[0] - 30 : c.pos[0] + 30, c.pos[1], c.pos[2]);
             const target = project(c.pos[0], c.pos[1], c.pos[2]);
 
             const isRight = c.pos[0] > 0;
-            const labelX = isRight ? target.x + 35 : target.x - 35;
+            const lineLen = 25 * Math.min(1, baseScale);
+            const labelX = isRight ? target.x + lineLen : target.x - lineLen;
             const labelY = target.y;
 
+            // Connecting HUD line
             ctx.beginPath();
             ctx.moveTo(anchor.x, anchor.y);
             ctx.lineTo(target.x, target.y);
             ctx.lineTo(labelX, labelY);
             ctx.strokeStyle = c.color;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 1.2;
             ctx.stroke();
 
+            // Anchor point dot on hardware tier
             ctx.beginPath();
             ctx.arc(anchor.x, anchor.y, 3, 0, Math.PI * 2);
             ctx.fillStyle = c.color;
+            ctx.shadowColor = c.color;
+            ctx.shadowBlur = 6;
             ctx.fill();
+            ctx.shadowBlur = 0;
 
-            ctx.font = 'bold 11px "JetBrains Mono", monospace';
+            // Background badge for crystal-clear readability
+            const badgeW = 210;
+            const badgeH = 28;
+            const badgeX = isRight ? labelX + 4 : labelX - 4 - badgeW;
+            const badgeY = labelY - 14;
+
+            ctx.fillStyle = 'rgba(8, 10, 13, 0.90)';
+            ctx.strokeStyle = c.color;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            // Primary Title
+            ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
             ctx.fillStyle = c.color;
-            ctx.textAlign = isRight ? 'left' : 'right';
-            ctx.fillText(c.text, isRight ? labelX + 6 : labelX - 6, labelY - 3);
+            ctx.textAlign = 'left';
+            ctx.fillText(c.text, badgeX + 8, badgeY + 12);
 
+            // Subtitle
             ctx.font = '9px "Space Grotesk", sans-serif';
             ctx.fillStyle = '#8E96A0';
-            ctx.fillText(c.sub, isRight ? labelX + 6 : labelX - 6, labelY + 11);
+            ctx.fillText(c.sub, badgeX + 8, badgeY + 23);
           });
+
+          ctx.restore();
         }
       }
 
