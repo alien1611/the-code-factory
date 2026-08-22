@@ -25,28 +25,34 @@ export const Navbar: React.FC<NavbarProps> = ({
   isConnected = false, 
   onDisconnect,
   onQuickScenario,
+  isLanding = false,
+  showOnLanding = true,
   className = ''
 }) => {
   const location = useLocation();
+  const isCurrentlyLanding = isLanding || location.pathname === '/';
+  const isVisible = !isCurrentlyLanding || showOnLanding;
 
   return (
-    <header className={`sticky top-0 z-50 w-full bg-[#000000]/95 border-b border-[#161B22]/80 backdrop-blur-md transition-all duration-300 pointer-events-auto ${className}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 w-full bg-[#000000]/95 border-b border-[#161B22]/80 backdrop-blur-md transition-all duration-500 transform ${
+      isVisible ? 'translate-y-0 opacity-100 pointer-events-auto shadow-2xl' : '-translate-y-full opacity-0 pointer-events-none'
+    } ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-3 group pointer-events-auto">
-          <div className="w-10 h-10 rounded-sm bg-[#14171D] border border-[#2A3038] group-hover:border-[#F5A623] flex items-center justify-center transition-all duration-300">
+          <div className="w-10 h-10 rounded-lg bg-[#14171D] border border-[#2A3038] group-hover:border-[#F5A623] flex items-center justify-center transition-all duration-300 shrink-0">
             <Cpu className="w-5 h-5 text-[#F5A623] group-hover:scale-110 transition-transform" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-['Big_Shoulders_Display'] text-2xl font-black tracking-wider uppercase text-[#F2F1ED] group-hover:text-[#F5A623] transition-colors duration-300">
+          <div className="flex flex-col justify-center">
+            <div className="flex items-center gap-2 leading-none">
+              <span className="font-['Big_Shoulders_Display'] text-2xl font-black tracking-wider uppercase text-[#F2F1ED] group-hover:text-[#F5A623] transition-colors duration-300 leading-none">
                 THE CODE FACTORY
               </span>
-              <span className="text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded bg-[#2A3038] text-[#F5A623] border border-[#F5A623]/30">
+              <span className="text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded bg-[#2A3038] text-[#F5A623] border border-[#F5A623]/30 leading-none">
                 v1.0-alpha
               </span>
             </div>
-            <p className="text-[11px] font-mono tracking-tight text-[#8E96A0]">
+            <p className="text-[11px] font-mono tracking-tight text-[#8E96A0] leading-none mt-1">
               AI Code Verification Engine
             </p>
           </div>

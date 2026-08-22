@@ -82,6 +82,8 @@ function AppContent() {
         isConnected={isConnected} 
         onDisconnect={handleDisconnect}
         onQuickScenario={handleSelectScenario}
+        isLanding={isLanding}
+        showOnLanding={showNavbarOnLanding}
       />
 
       <main className="flex-1">

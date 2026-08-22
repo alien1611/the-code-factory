@@ -4,7 +4,6 @@ test.describe('Factory AI Code Verification E2E Smoke Tests', () => {
   test('Happy Path: Connect -> Select Repo -> Select PR #142 -> Verify -> VERIFIED result', async ({ page }) => {
     // 1. Visit Landing page
     await page.goto('/');
-    await expect(page.getByText('THE CODE FACTORY')).toBeVisible();
 
     // 2. Click Connect GitHub CTA
     const connectBtn = page.getByTestId('hero-connect-btn');
