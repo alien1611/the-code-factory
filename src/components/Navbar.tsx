@@ -1,0 +1,170 @@
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  ShieldCheck, 
+  GitPullRequest, 
+  Cpu, 
+  Layers, 
+  CheckCircle2, 
+  AlertTriangle,
+  RotateCcw,
+  Sparkles
+} from 'lucide-react';
+import { GithubIcon } from './GithubIcon';
+
+interface NavbarProps {
+  isConnected?: boolean;
+  onDisconnect?: () => void;
+  onQuickScenario?: (type: 'verified' | 'violation') => void;
+  isLanding?: boolean;
+  showOnLanding?: boolean;
+  className?: string;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ 
+  isConnected = false, 
+  onDisconnect,
+  onQuickScenario,
+  isLanding = false,
+  showOnLanding = true,
+  className = ''
+}) => {
+  const location = useLocation();
+  const isStealth = isLanding && !showOnLanding;
+
+  return (
+    <header className={`sticky top-0 z-50 w-full transition-all duration-500 ${
+      isStealth 
+        ? 'bg-transparent border-b border-transparent pointer-events-none' 
+        : 'bg-[#000000]/90 border-b border-[#161B22]/60 backdrop-blur-md pointer-events-auto'
+    } ${className}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        {/* Brand */}
+        <Link to="/" className="flex items-center gap-3 group pointer-events-auto">
+          <div className={`w-10 h-10 rounded-sm border flex items-center justify-center transition-all duration-300 ${
+            isStealth ? 'bg-transparent border-transparent opacity-0' : 'bg-[#14171D] border-[#2A3038] group-hover:border-[#F5A623]'
+          }`}>
+            <Cpu className="w-5 h-5 text-[#F5A623] group-hover:scale-110 transition-transform" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className={`font-['Big_Shoulders_Display'] text-2xl font-black tracking-wider uppercase transition-colors duration-300 ${
+                isStealth ? 'text-[#000000] select-none' : 'text-[#F2F1ED] group-hover:text-[#F5A623]'
+              }`}>
+                THE CODE FACTORY
+              </span>
+              <span className={`text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded border transition-opacity duration-300 ${
+                isStealth ? 'opacity-0 border-transparent' : 'bg-[#2A3038] text-[#F5A623] border-[#F5A623]/30'
+              }`}>
+                v1.0-alpha
+              </span>
+            </div>
+            <p className={`text-[11px] font-mono tracking-tight transition-opacity duration-300 ${
+              isStealth ? 'opacity-0' : 'text-[#8E96A0]'
+            }`}>
+              AI Code Verification Engine
+            </p>
+          </div>
+        </Link>
+
+        {/* Navigation Links */}
+        <nav className={`hidden md:flex items-center gap-1 transition-opacity duration-300 ${
+          isStealth ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+        }`}>
+          <Link
+            to="/"
+            className={`px-3 py-1.5 text-xs font-mono tracking-wide rounded transition-colors ${
+              location.pathname === '/' 
+                ? 'bg-[#14171D] text-[#37E2C4] border border-[#37E2C4]/30' 
+                : 'text-[#8E96A0] hover:text-[#F2F1ED] hover:bg-[#14171D]'
+            }`}
+          >
+            01 // FACTORY OVERVIEW
+          </Link>
+          <Link
+            to="/repos"
+            className={`px-3 py-1.5 text-xs font-mono tracking-wide rounded transition-colors ${
+              location.pathname.startsWith('/repos') 
+                ? 'bg-[#14171D] text-[#37E2C4] border border-[#37E2C4]/30' 
+                : 'text-[#8E96A0] hover:text-[#F2F1ED] hover:bg-[#14171D]'
+            }`}
+          >
+            02 // SELECT PR
+          </Link>
+          <Link
+            to="/verify"
+            className={`px-3 py-1.5 text-xs font-mono tracking-wide rounded transition-colors ${
+              location.pathname.startsWith('/verify') 
+                ? 'bg-[#14171D] text-[#37E2C4] border border-[#37E2C4]/30' 
+                : 'text-[#8E96A0] hover:text-[#F2F1ED] hover:bg-[#14171D]'
+            }`}
+          >
+            03 // PIPELINE
+          </Link>
+          <Link
+            to="/results"
+            className={`px-3 py-1.5 text-xs font-mono tracking-wide rounded transition-colors ${
+              location.pathname.startsWith('/results') 
+                ? 'bg-[#14171D] text-[#37E2C4] border border-[#37E2C4]/30' 
+                : 'text-[#8E96A0] hover:text-[#F2F1ED] hover:bg-[#14171D]'
+            }`}
+          >
+            04 // VERDICT
+          </Link>
+        </nav>
+
+        {/* Action / Auth Badge */}
+        <div className="flex items-center gap-3">
+          {/* Quick Scenario Tester for Hackathon Evaluators */}
+          {onQuickScenario && (
+            <div className="hidden lg:flex items-center gap-1.5 bg-[#14171D] border border-[#232A35] p-1 rounded">
+              <span className="text-[10px] font-mono text-[#8E96A0] px-1">DEMO:</span>
+              <button
+                onClick={() => onQuickScenario('verified')}
+                className="px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-[#37E2C4]/10 text-[#37E2C4] hover:bg-[#37E2C4]/20 border border-[#37E2C4]/40 flex items-center gap-1 transition-colors cursor-pointer"
+                title="Test Happy Path: All Invariants Verified"
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                VERIFIED
+              </button>
+              <button
+                onClick={() => onQuickScenario('violation')}
+                className="px-2 py-0.5 text-[11px] font-mono font-medium rounded bg-[#FF5C5C]/10 text-[#FF5C5C] hover:bg-[#FF5C5C]/20 border border-[#FF5C5C]/40 flex items-center gap-1 transition-colors cursor-pointer"
+                title="Test Failure Path: Requirement Violation"
+              >
+                <AlertTriangle className="w-3 h-3" />
+                VIOLATION
+              </button>
+            </div>
+          )}
+
+          {isConnected ? (
+            <div className="flex items-center gap-2 bg-[#14171D] border border-[#2A3038] px-3 py-1.5 rounded">
+              <div className="w-2 h-2 rounded-full bg-[#37E2C4] animate-pulse" />
+              <GithubIcon className="w-4 h-4 text-[#F2F1ED]" />
+              <span className="text-xs font-mono text-[#F2F1ED] font-medium">@octocat</span>
+              {onDisconnect && (
+                <button
+                  onClick={onDisconnect}
+                  className="text-[10px] text-[#8E96A0] hover:text-[#FF5C5C] ml-1 transition-colors underline cursor-pointer"
+                  title="Disconnect Mock Session"
+                >
+                  disconnect
+                </button>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/repos"
+              data-testid="hero-connect-btn"
+              className="inline-flex items-center gap-2 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono text-xs font-bold px-3 py-1.5 rounded shadow-sm hover:shadow-[0_0_15px_rgba(245,166,35,0.4)] transition-all"
+            >
+              <GithubIcon className="w-4 h-4" />
+              CONNECT GITHUB
+            </Link>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
