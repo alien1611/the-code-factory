@@ -19,6 +19,7 @@ import {
   Play
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { GithubIcon } from './GithubIcon';
 
 interface FactorySequenceProps {
   onConnectClick?: () => void;
@@ -178,8 +179,8 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
       // -----------------------------------------------------------
       // 3D EXPLODING MULTI-TIER RIG (STRICTLY CENTERED - NO LEFT/RIGHT SHIFT)
       // -----------------------------------------------------------
-      if (p >= 0.0) {
-        const rigAlpha = Math.min(1, 0.4 + p * 0.6);
+      if (p >= 0.12) {
+        const rigAlpha = Math.min(1, (p - 0.12) / 0.15);
 
         if (isAutoRotating) {
           mouseRef.current.targetRotY += 0.005;
@@ -609,54 +610,14 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
         {/* STORY OVERLAYS (STRICTLY CENTERED RIG FLOW)                   */}
         {/* ------------------------------------------------------------- */}
 
-        {/* STAGE 0 (0% - 22% Scroll): Opening Hero Introduction & Direct CTAs */}
-        {scrollProgress <= 0.22 && (
+        {/* STAGE 0 (0% - 15% Scroll): Pure Stealth Void with Glowing Pinpoint & Scroll Prompt */}
+        {scrollProgress <= 0.15 && (
           <div 
-            className="absolute inset-x-0 top-20 sm:top-24 flex flex-col items-center justify-center px-4 text-center transition-all duration-500 z-20 pointer-events-auto"
-            style={{
-              opacity: Math.max(0, 1 - scrollProgress / 0.18),
-              transform: `translateY(${scrollProgress * -30}px)`
-            }}
+            className="absolute bottom-12 inset-x-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-500 z-20 text-center space-y-2"
+            style={{ opacity: Math.max(0, 1 - scrollProgress / 0.12) }}
           >
-            <div className="max-w-3xl space-y-4 bg-[#0B0D10]/85 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-[#232A35] shadow-[0_0_50px_rgba(0,0,0,0.8)]">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#14171D] border border-[#37E2C4]/40 text-[#37E2C4] text-xs font-mono font-bold uppercase tracking-wider shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-[#37E2C4]" />
-                <span>FORMAL AI INVARIANT VERIFICATION ENGINE</span>
-              </div>
-              
-              <h1 className="font-['Big_Shoulders_Display'] text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-[#F2F1ED] leading-none tracking-tight">
-                THE PHYSICAL <span className="text-[#37E2C4]">VERIFICATION ENGINE</span>
-              </h1>
-
-              <p className="text-sm sm:text-base text-[#8E96A0] max-w-xl mx-auto font-sans leading-relaxed">
-                Replace code review guesswork with mathematical proofs. Extract invariants, synthesize adversarial fuzzing vectors, and verify pull requests before merge.
-              </p>
-
-              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-                <Link
-                  to="/verify"
-                  onClick={onConnectClick}
-                  data-testid="hero-primary-launch-btn"
-                  className="px-5 py-3 rounded-xl bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono font-bold text-xs shadow-[0_0_20px_rgba(245,166,35,0.35)] transition-all flex items-center gap-2 cursor-pointer hover:scale-[1.02]"
-                >
-                  <Play className="w-4 h-4 fill-current" />
-                  <span>LAUNCH VERIFICATION PIPELINE</span>
-                </Link>
-
-                <button
-                  onClick={() => {
-                    if (onSelectScenario) onSelectScenario('verified');
-                    else navigate('/repos');
-                  }}
-                  className="px-4 py-3 rounded-xl bg-[#14171D] hover:bg-[#1C222B] text-[#37E2C4] border border-[#37E2C4]/40 font-mono text-xs font-bold transition-all cursor-pointer"
-                >
-                  DEMO: PR #142 (VERIFIED)
-                </button>
-              </div>
-
-              <div className="pt-1 text-[11px] font-mono text-[#8E96A0] animate-pulse">
-                <span>↓ SCROLL TO EXPLORE 3D ASSEMBLY LINE STAGES</span>
-              </div>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#14171D]/90 border border-[#37E2C4]/40 text-[#37E2C4] text-[11px] font-mono tracking-widest uppercase animate-pulse shadow-[0_0_20px_rgba(55,226,196,0.25)]">
+              <span>↓ SCROLL TO INITIALIZE FACTORY ASSEMBLY LINE</span>
             </div>
           </div>
         )}
@@ -778,13 +739,13 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
 
               <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
                 <Link
-                  to="/verify"
+                  to="/connect"
                   onClick={onConnectClick}
                   data-testid="stage-connect-btn"
                   className="px-6 py-3.5 rounded-xl bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono font-bold text-sm shadow-[0_0_25px_rgba(245,166,35,0.4)] transition-all flex items-center gap-2 cursor-pointer hover:scale-[1.03]"
                 >
-                  <Play className="w-4 h-4 fill-current" />
-                  <span>START CODE VERIFICATION</span>
+                  <GithubIcon className="w-4 h-4" />
+                  <span>CONNECT GITHUB REPOSITORY</span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
 
