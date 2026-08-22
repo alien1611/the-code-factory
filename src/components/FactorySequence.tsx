@@ -19,7 +19,6 @@ import {
   Play
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GithubIcon } from './GithubIcon';
 
 interface FactorySequenceProps {
   onConnectClick?: () => void;
@@ -635,13 +634,13 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
 
               <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                 <Link
-                  to="/connect"
+                  to="/verify"
                   onClick={onConnectClick}
-                  data-testid="hero-primary-connect-btn"
+                  data-testid="hero-primary-launch-btn"
                   className="px-5 py-3 rounded-xl bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono font-bold text-xs shadow-[0_0_20px_rgba(245,166,35,0.35)] transition-all flex items-center gap-2 cursor-pointer hover:scale-[1.02]"
                 >
-                  <GithubIcon className="w-4 h-4" />
-                  <span>CONNECT GITHUB WORKSPACE</span>
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>LAUNCH VERIFICATION PIPELINE</span>
                 </Link>
 
                 <button
@@ -779,12 +778,13 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
 
               <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
                 <Link
-                  to="/connect"
+                  to="/verify"
                   onClick={onConnectClick}
                   data-testid="stage-connect-btn"
                   className="px-6 py-3.5 rounded-xl bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono font-bold text-sm shadow-[0_0_25px_rgba(245,166,35,0.4)] transition-all flex items-center gap-2 cursor-pointer hover:scale-[1.03]"
                 >
-                  <span>CONNECT GITHUB REPOSITORY</span>
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>START CODE VERIFICATION</span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
 

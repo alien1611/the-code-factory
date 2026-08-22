@@ -8,9 +8,9 @@ import {
   CheckCircle2, 
   AlertTriangle,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Play
 } from 'lucide-react';
-import { GithubIcon } from './GithubIcon';
 
 interface NavbarProps {
   isConnected?: boolean;
@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'text-[#8E96A0] hover:text-[#F2F1ED] hover:bg-[#14171D]'
             }`}
           >
-            02 // SELECT PR
+            02 // SELECT TARGET
           </Link>
           <Link
             to="/verify"
@@ -121,31 +121,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
 
-          {isConnected ? (
-            <div className="flex items-center gap-2 bg-[#14171D] border border-[#2A3038] px-3 py-1.5 rounded">
-              <div className="w-2 h-2 rounded-full bg-[#37E2C4] animate-pulse" />
-              <GithubIcon className="w-4 h-4 text-[#F2F1ED]" />
-              <span className="text-xs font-mono text-[#F2F1ED] font-medium">@octocat</span>
-              {onDisconnect && (
-                <button
-                  onClick={onDisconnect}
-                  className="text-[10px] text-[#8E96A0] hover:text-[#FF5C5C] ml-1 transition-colors underline cursor-pointer"
-                  title="Disconnect Mock Session"
-                >
-                  disconnect
-                </button>
-              )}
-            </div>
-          ) : (
-            <Link
-              to="/repos"
-              data-testid="navbar-connect-btn"
-              className="inline-flex items-center gap-2 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono text-xs font-bold px-3 py-1.5 rounded shadow-sm hover:shadow-[0_0_15px_rgba(245,166,35,0.4)] transition-all"
-            >
-              <GithubIcon className="w-4 h-4" />
-              CONNECT GITHUB
-            </Link>
-          )}
+          <Link
+            to="/verify"
+            data-testid="navbar-launch-btn"
+            className="inline-flex items-center gap-2 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono text-xs font-bold px-3.5 py-1.5 rounded shadow-sm hover:shadow-[0_0_15px_rgba(245,166,35,0.4)] transition-all cursor-pointer hover:scale-[1.02]"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>LAUNCH VERIFIER</span>
+          </Link>
         </div>
       </div>
     </header>

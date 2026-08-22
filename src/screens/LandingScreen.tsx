@@ -14,7 +14,6 @@ import {
   Sparkles,
   Play
 } from 'lucide-react';
-import { GithubIcon } from '../components/GithubIcon';
 import { FactorySequence } from '../components/FactorySequence';
 
 interface LandingScreenProps {
@@ -31,8 +30,8 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
   const navigate = useNavigate();
   const [activeCodeTab, setActiveCodeTab] = useState<'verified' | 'violation'>('verified');
 
-  const handleConnectClick = () => {
-    navigate('/connect');
+  const handleLaunchVerifier = () => {
+    navigate('/verify');
   };
 
   const handleDemoLaunch = (type: 'verified' | 'violation') => {
@@ -44,7 +43,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
     <div className="flex flex-col min-h-screen bg-[#000000] text-[#F2F1ED] overflow-x-clip">
       {/* 1. Full Pinned Physical Factory Assembly Line Animation */}
       <FactorySequence 
-        onConnectClick={handleConnectClick} 
+        onConnectClick={handleLaunchVerifier} 
         onSelectScenario={handleDemoLaunch}
       />
 
@@ -69,12 +68,12 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
             <div className="flex flex-wrap gap-4 pt-2">
               <button
-                onClick={handleConnectClick}
+                onClick={handleLaunchVerifier}
                 className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono font-bold text-sm shadow-[0_0_25px_rgba(245,166,35,0.4)] transition-all cursor-pointer hover:scale-[1.02]"
                 data-testid="section-connect-btn"
               >
-                <GithubIcon className="w-5 h-5" />
-                <span>CONNECT GITHUB REPOSITORY</span>
+                <Play className="w-4 h-4 fill-current" />
+                <span>LAUNCH CODE VERIFIER</span>
               </button>
 
               <button
