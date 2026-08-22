@@ -25,52 +25,35 @@ export const Navbar: React.FC<NavbarProps> = ({
   isConnected = false, 
   onDisconnect,
   onQuickScenario,
-  isLanding = false,
-  showOnLanding = true,
   className = ''
 }) => {
   const location = useLocation();
-  const isStealth = isLanding && !showOnLanding;
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-500 ${
-      isStealth 
-        ? 'bg-transparent border-b border-transparent pointer-events-none' 
-        : 'bg-[#000000]/90 border-b border-[#161B22]/60 backdrop-blur-md pointer-events-auto'
-    } ${className}`}>
+    <header className={`sticky top-0 z-50 w-full bg-[#000000]/95 border-b border-[#161B22]/80 backdrop-blur-md transition-all duration-300 pointer-events-auto ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-3 group pointer-events-auto">
-          <div className={`w-10 h-10 rounded-sm border flex items-center justify-center transition-all duration-300 ${
-            isStealth ? 'bg-transparent border-transparent opacity-0' : 'bg-[#14171D] border-[#2A3038] group-hover:border-[#F5A623]'
-          }`}>
+          <div className="w-10 h-10 rounded-sm bg-[#14171D] border border-[#2A3038] group-hover:border-[#F5A623] flex items-center justify-center transition-all duration-300">
             <Cpu className="w-5 h-5 text-[#F5A623] group-hover:scale-110 transition-transform" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className={`font-['Big_Shoulders_Display'] text-2xl font-black tracking-wider uppercase transition-colors duration-300 ${
-                isStealth ? 'text-[#000000] select-none' : 'text-[#F2F1ED] group-hover:text-[#F5A623]'
-              }`}>
+              <span className="font-['Big_Shoulders_Display'] text-2xl font-black tracking-wider uppercase text-[#F2F1ED] group-hover:text-[#F5A623] transition-colors duration-300">
                 THE CODE FACTORY
               </span>
-              <span className={`text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded border transition-opacity duration-300 ${
-                isStealth ? 'opacity-0 border-transparent' : 'bg-[#2A3038] text-[#F5A623] border-[#F5A623]/30'
-              }`}>
+              <span className="text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded bg-[#2A3038] text-[#F5A623] border border-[#F5A623]/30">
                 v1.0-alpha
               </span>
             </div>
-            <p className={`text-[11px] font-mono tracking-tight transition-opacity duration-300 ${
-              isStealth ? 'opacity-0' : 'text-[#8E96A0]'
-            }`}>
+            <p className="text-[11px] font-mono tracking-tight text-[#8E96A0]">
               AI Code Verification Engine
             </p>
           </div>
         </Link>
 
         {/* Navigation Links */}
-        <nav className={`hidden md:flex items-center gap-1 transition-opacity duration-300 ${
-          isStealth ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
-        }`}>
+        <nav className="hidden md:flex items-center gap-1">
           <Link
             to="/"
             className={`px-3 py-1.5 text-xs font-mono tracking-wide rounded transition-colors ${
@@ -156,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <Link
               to="/repos"
-              data-testid="hero-connect-btn"
+              data-testid="navbar-connect-btn"
               className="inline-flex items-center gap-2 bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0B0D10] font-mono text-xs font-bold px-3 py-1.5 rounded shadow-sm hover:shadow-[0_0_15px_rgba(245,166,35,0.4)] transition-all"
             >
               <GithubIcon className="w-4 h-4" />

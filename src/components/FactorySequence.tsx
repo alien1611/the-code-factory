@@ -178,8 +178,8 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
       // -----------------------------------------------------------
       // 3D EXPLODING MULTI-TIER RIG (STRICTLY CENTERED - NO LEFT/RIGHT SHIFT)
       // -----------------------------------------------------------
-      if (p >= 0.10) {
-        const rigAlpha = Math.min(1, (p - 0.10) / 0.12);
+      if (p >= 0.0) {
+        const rigAlpha = Math.min(1, 0.4 + p * 0.6);
 
         if (isAutoRotating) {
           mouseRef.current.targetRotY += 0.005;
@@ -193,7 +193,7 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
         // NO HORIZONTAL PAN: Rig is locked strictly to centerX!
         const rigCenterX = centerX;
         const rigCenterY = centerY + 10;
-        const baseScale = Math.min(width / 950, height / 650) * 1.05 * Math.min(1, (p - 0.10) / 0.10);
+        const baseScale = Math.min(width / 950, height / 650) * 1.05 * (0.85 + p * 0.15);
 
         const project = (x: number, y: number, z: number) => {
           const cosY = Math.cos(rotY);
@@ -577,11 +577,10 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
           Connect
         </Link>
 
-        {/* FLOATING 3D RIG CONTROLS (Only visible once the 3D rig starts emerging) */}
-        {scrollProgress >= 0.12 && (
-          <div className="absolute top-20 right-6 z-30 flex items-center gap-2 pointer-events-auto transition-opacity duration-500">
-            <button
-              onClick={() => setIsWireframe(!isWireframe)}
+        {/* FLOATING 3D RIG CONTROLS */}
+        <div className="absolute top-20 right-6 z-30 flex items-center gap-2 pointer-events-auto transition-opacity duration-500">
+          <button
+            onClick={() => setIsWireframe(!isWireframe)}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-1.5 border transition-all cursor-pointer backdrop-blur-md shadow-lg ${
                 isWireframe 
                   ? 'bg-[#37E2C4]/20 border-[#37E2C4] text-[#37E2C4] shadow-[0_0_15px_rgba(55,226,196,0.35)]' 
@@ -603,9 +602,8 @@ export const FactorySequence: React.FC<FactorySequenceProps> = ({
               title="Auto Orbit Camera"
             >
               <RotateCw className={`w-3.5 h-3.5 ${isAutoRotating ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        )}
+          </button>
+        </div>
 
         {/* ------------------------------------------------------------- */}
         {/* STORY OVERLAYS (STRICTLY CENTERED RIG FLOW)                   */}

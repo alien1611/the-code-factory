@@ -14,7 +14,7 @@ function AppContent() {
   const location = useLocation();
   const isLanding = location.pathname === '/';
 
-  const [isConnected, setIsConnected] = useState<boolean>(true);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [currentRepo, setCurrentRepo] = useState<string>('acme-corp/auth-core');
   const [currentPR, setCurrentPR] = useState<number>(89);
@@ -82,8 +82,6 @@ function AppContent() {
         isConnected={isConnected} 
         onDisconnect={handleDisconnect}
         onQuickScenario={handleSelectScenario}
-        isLanding={isLanding}
-        showOnLanding={showNavbarOnLanding}
       />
 
       <main className="flex-1">
