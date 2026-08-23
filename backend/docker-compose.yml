@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: evidence_verifier_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: evidence_verifier
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d evidence_verifier"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: evidence_verifier_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/evidence_verifier
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DOCKER_ENABLED=false
+      - DOCKER_TIMEOUT_SECONDS=120
+      - DOCKER_MEMORY_LIMIT=512m
+      - DOCKER_CPU_LIMIT=1.0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - temp_workspaces:/app/temp_workspaces
+
+volumes:
+  postgres_data:
+  temp_workspaces:
