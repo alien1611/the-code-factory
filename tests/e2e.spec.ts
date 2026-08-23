@@ -19,7 +19,8 @@ test.describe('Factory AI Code Verification E2E Smoke Tests', () => {
 
     // 5. Select PR #142 (Verified sample) & Click Verify Code
     const verifyBtn = page.getByTestId('verify-btn-142');
-    await expect(verifyBtn).toBeVisible();
+    await expect(verifyBtn).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(300);
     await verifyBtn.click();
 
     // 6. Should navigate to /verify progress pipeline
@@ -50,7 +51,10 @@ test.describe('Factory AI Code Verification E2E Smoke Tests', () => {
     // 3. Should navigate to /repos screen
     await expect(page).toHaveURL(/\/repos/);
 
-    // 4. Default repo acme-corp/auth-core is active. Select PR #89 (Violation sample)
+    // 4. Ensure acme-corp/auth-core repo is active and select PR #89 (Violation sample)
+    const repoCard = page.getByTestId('repo-card-repo-1');
+    await repoCard.click();
+
     const verifyBtn = page.getByTestId('verify-btn-89');
     await expect(verifyBtn).toBeVisible();
     await verifyBtn.click();
