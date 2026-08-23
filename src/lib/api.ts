@@ -18,44 +18,70 @@ import {
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem('github_pat');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['X-GitHub-Token'] = token;
+  }
+  return headers;
+}
+
 /**
  * GET /api/repositories -> list repositories from backend
  */
 export async function getRepos(): Promise<Repo[]> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/repositories`, { signal: AbortSignal.timeout(2000) });
+    const res = await fetch(`${BACKEND_URL}/api/repositories`, { 
+      headers: getAuthHeaders(),
+      signal: AbortSignal.timeout(3000) 
+    });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        const liveRepos = data.map((r: any, idx: number) => ({
-          id: `repo-live-${r.github_id || idx + 1}`,
+        return data.map((r: any, idx: number) => ({
+          id: `repo-${r.github_id || idx + 1}`,
           full_name: r.full_name || `${r.owner}/${r.name}`,
-          description: r.description || 'Production repository',
-          stars: r.stars || 120,
-          forks: r.forks || 30,
-          language: r.language || 'TypeScript',
+          description: r.description || 'Live GitHub Repository',
+          stars: r.stars || 0,
+          forks: r.forks || 0,
+          language: r.language || 'Python',
           default_branch: r.default_branch || 'main'
         }));
-        return [...liveRepos, ...MOCK_REPOS];
       }
     }
   } catch (err) {
-    // Offline / test runner fallback
+    // Backend offline / network fallback
   }
-  return MOCK_REPOS;
+
+  return [
+    {
+      id: 'repo-1',
+      full_name: 'alien1611/the-code-factory',
+      description: 'Multi-Agent AI Code Verification and Synthesis Engine',
+      stars: 1,
+      forks: 0,
+      language: 'TypeScript',
+      default_branch: 'main'
+    },
+    {
+      id: 'repo-2',
+      full_name: 'alien1611/Evidence-Driven-Verification-Engine',
+      description: 'FastAPI Orchestrator for formal mathematical invariants',
+      stars: 0,
+      forks: 0,
+      language: 'Python',
+      default_branch: 'main'
+    }
+  ];
 }
 
 /**
  * GET /api/repositories/{owner}/{repo}/pull-requests -> list pull requests for a repository
  */
 export async function getPullRequests(repoFullNameOrId: string): Promise<PullRequest[]> {
-  // Check if standard target repo mock fixture exists
-  if (MOCK_PRS[repoFullNameOrId]) {
-    return MOCK_PRS[repoFullNameOrId];
-  }
-
-  let owner = 'octocat';
-  let repo = 'Hello-World';
+  let owner = 'alien1611';
+  let repo = 'the-code-factory';
   
   if (repoFullNameOrId && repoFullNameOrId.includes('/')) {
     const parts = repoFullNameOrId.split('/');
@@ -64,32 +90,51 @@ export async function getPullRequests(repoFullNameOrId: string): Promise<PullReq
   }
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/repositories/${owner}/${repo}/pull-requests`, { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(`${BACKEND_URL}/api/repositories/${owner}/${repo}/pull-requests?state=all`, { 
+      headers: getAuthHeaders(),
+      signal: AbortSignal.timeout(4000) 
+    });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         return data.map((p: any) => ({
-          id: `pr-${p.number}`,
           number: p.number,
           title: p.title,
-          author: p.author || p.user?.login || 'contributor',
-          branch: p.head_branch || p.head?.ref || 'main',
+          author: p.author || 'contributor',
+          branch: p.head_branch || p.head_sha?.substring(0, 7) || 'main',
+          target_branch: p.base_sha?.substring(0, 7) || 'main',
           state: p.state || 'open',
           additions: p.additions || 15,
           deletions: p.deletions || 4,
           changed_files_count: p.changed_files || 2,
-          commits_count: p.commits_count || p.commits || 1,
-          created_at: p.created_at || 'Just now',
+          commits_count: p.commits_count || 1,
+          created_at: p.created_at || 'Recently',
           updated_at: p.updated_at || 'Recently',
-          description: p.description || p.body || 'Pull request code changes'
+          description: p.description || 'Pull request code verification'
         }));
       }
     }
   } catch (err) {
-    // Offline / test fixture fallback
+    // Backend offline / network fallback
   }
 
-  return (repoFullNameOrId.includes('payment') || repoFullNameOrId.includes('repo-2') ? MOCK_PRS['repo-2'] : MOCK_PRS['repo-1']) || [];
+  return [
+    {
+      number: 1,
+      title: `Verify ${repo} @ HEAD (Full Invariant & Syntax Check)`,
+      author: owner,
+      branch: 'main',
+      target_branch: 'main',
+      state: 'open',
+      additions: 120,
+      deletions: 12,
+      changed_files_count: 5,
+      commits_count: 3,
+      created_at: 'Just now',
+      updated_at: 'Just now',
+      description: `Automated invariant verification for branch main on ${owner}/${repo}`
+    }
+  ];
 }
 
 /**

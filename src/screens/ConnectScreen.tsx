@@ -30,8 +30,8 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  // Auth Mode: Username Discovery vs Personal Access Token
-  const [authMode, setAuthMode] = useState<'username' | 'pat'>('username');
+  // Auth Mode: Personal Access Token (Primary) vs Username Discovery
+  const [authMode, setAuthMode] = useState<'pat' | 'username'>('pat');
   const [githubUsername, setGithubUsername] = useState<string>('alien1611');
   const [patToken, setPatToken] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);

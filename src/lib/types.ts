@@ -19,9 +19,12 @@ export interface PullRequest {
   created_at?: string;
   branch: string;
   target_branch?: string;
+  state?: string;
   additions: number;
   deletions: number;
+  changed_files_count?: number;
   commits_count: number;
+  description?: string;
   scenario_type?: 'verified' | 'violation';
 }
 

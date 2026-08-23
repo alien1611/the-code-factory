@@ -36,10 +36,24 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
   const [isLoadingPRs, setIsLoadingPRs] = useState<boolean>(false);
   const [isStartingJob, setIsStartingJob] = useState<number | null>(null);
 
+  const [customRepoInput, setCustomRepoInput] = useState<string>('');
+  const [isAddingRepo, setIsAddingRepo] = useState<boolean>(false);
+  const [activeUsername, setActiveUsername] = useState<string>('alien1611');
+
   useEffect(() => {
     async function loadInitialRepos() {
       setIsLoadingRepos(true);
       try {
+        // Fetch active user
+        fetch('http://127.0.0.1:8000/api/auth/user')
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (data?.authenticated && data.username) {
+              setActiveUsername(data.username);
+            }
+          })
+          .catch(() => {});
+
         const repoList = await getRepos();
         setRepos(repoList);
         if (repoList.length > 0) {
@@ -54,6 +68,45 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
     loadInitialRepos();
   }, []);
 
+  const handleAddCustomRepo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanRepo = customRepoInput.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '');
+    if (!cleanRepo || !cleanRepo.includes('/')) return;
+
+    setIsAddingRepo(true);
+    try {
+      const parts = cleanRepo.split('/');
+      const res = await fetch(`http://127.0.0.1:8000/api/repositories/${parts[0]}/${parts[1]}`);
+      const newRepo: Repo = {
+        id: `repo-${Date.now()}`,
+        full_name: cleanRepo,
+        description: res.ok ? (await res.json()).description || 'Custom GitHub Repository' : 'Custom GitHub Repository',
+        stars: 0,
+        forks: 0,
+        language: 'TypeScript',
+        default_branch: 'main'
+      };
+      setRepos(prev => [newRepo, ...prev.filter(r => r.full_name !== cleanRepo)]);
+      setSelectedRepoId(newRepo.id);
+      setCustomRepoInput('');
+    } catch (e) {
+      const newRepo: Repo = {
+        id: `repo-${Date.now()}`,
+        full_name: cleanRepo,
+        description: 'Custom GitHub Repository',
+        stars: 0,
+        forks: 0,
+        language: 'TypeScript',
+        default_branch: 'main'
+      };
+      setRepos(prev => [newRepo, ...prev.filter(r => r.full_name !== cleanRepo)]);
+      setSelectedRepoId(newRepo.id);
+      setCustomRepoInput('');
+    } finally {
+      setIsAddingRepo(false);
+    }
+  };
+
   const selectedRepo = repos.find(r => r.id === selectedRepoId);
 
   useEffect(() => {
@@ -61,7 +114,7 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
       if (!selectedRepo) return;
       setIsLoadingPRs(true);
       try {
-        const prList = await getPullRequests(selectedRepo.id || selectedRepo.full_name);
+        const prList = await getPullRequests(selectedRepo.full_name);
         setPullRequests(prList);
       } catch (err) {
         console.error('Failed to load PRs:', err);
@@ -118,7 +171,7 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#14171D] hover:bg-[#1C222B] border border-[#2A3038] text-[#37E2C4] font-mono text-xs transition-all cursor-pointer"
             title="Switch Workspace or PAT Token"
           >
-            <span>@octocat (Manage Org)</span>
+            <span>@{activeUsername} (Manage Auth)</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
 
@@ -135,6 +188,28 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
         </div>
       </div>
 
+      {/* Quick Add Custom Repo Bar */}
+      <form onSubmit={handleAddCustomRepo} className="p-4 rounded-xl bg-[#14171D] border border-[#232A35] flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex items-center gap-2 text-xs font-mono text-[#37E2C4] whitespace-nowrap">
+          <Plus className="w-4 h-4" />
+          <span>LOAD ANY REPOSITORY:</span>
+        </div>
+        <input 
+          type="text"
+          value={customRepoInput}
+          onChange={(e) => setCustomRepoInput(e.target.value)}
+          placeholder="e.g. alien1611/the-code-factory or owner/repo"
+          className="flex-1 w-full bg-[#0B0D10] border border-[#2A3038] rounded-lg px-3.5 py-2 text-xs font-mono text-[#F2F1ED] placeholder-[#8E96A0] focus:outline-none focus:border-[#37E2C4]"
+        />
+        <button
+          type="submit"
+          disabled={isAddingRepo || !customRepoInput.trim()}
+          className="w-full sm:w-auto px-4 py-2 rounded-lg bg-[#37E2C4] hover:bg-[#37E2C4]/90 text-[#0B0D10] font-mono text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+        >
+          {isAddingRepo ? 'FETCHING REPOSITORY...' : 'FETCH REPOSITORY'}
+        </button>
+      </form>
+
       {/* Main Split: Left Repo List, Right PR List */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left: Repositories (4 cols) */}
@@ -142,7 +217,7 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
           <div className="flex items-center justify-between text-xs font-mono text-[#8E96A0]">
             <span>CONNECTED REPOSITORIES ({filteredRepos.length})</span>
             <Link to="/connect" className="text-[#37E2C4] hover:underline flex items-center gap-1">
-              <span>@octocat</span>
+              <span>@{activeUsername}</span>
             </Link>
           </div>
 
