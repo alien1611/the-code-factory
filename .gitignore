@@ -43,6 +43,7 @@ pytest_report.json
 *.sqlite3
 temp_workspaces/
 workspace_temp/
+test_repository/
 
 # Node / Frontend
 node_modules/
