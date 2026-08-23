@@ -26,7 +26,7 @@ This guide covers deploying **The Code Factory** using GitHub Actions, GitHub Pa
 
 ## 🌐 Method 1: Frontend to GitHub Pages (Automated CI/CD)
 
-The repository includes a GitHub Actions workflow that automatically builds and deploys the frontend web app whenever you push to `main`.
+The repository includes a GitHub Actions workflow that automatically builds and deploys the frontend web app whenever you push to `combined` or `main`.
 
 ### Step 1: Enable GitHub Pages in your Repository
 1. Navigate to your GitHub repository: `https://github.com/alien1611/the-code-factory`
@@ -41,9 +41,9 @@ If your backend is hosted on Render, Railway, or AWS:
 4. Value: `https://your-backend-service.onrender.com` (your backend URL without trailing slash).
 
 ### Step 3: Trigger Deployment
-- Push your changes to the `main` branch:
+- Push your changes to the `combined` or `main` branch:
   ```bash
-  git push origin main
+  git push origin combined
   ```
 - Or go to the **Actions** tab in GitHub > **Deploy Frontend to GitHub Pages** > **Run workflow**.
 
