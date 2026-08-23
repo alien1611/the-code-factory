@@ -1,31 +1,42 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Header
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.database.models.repository import Repository
-from app.services.github_service import github_service
+from app.services.github_service import github_service, GitHubService
 
 router = APIRouter(prefix="/api/repositories", tags=["Repositories"])
 
 
+def get_service(x_github_token: str | None = Header(None, alias="X-GitHub-Token")) -> GitHubService:
+    if x_github_token and x_github_token.strip():
+        return GitHubService(token=x_github_token.strip())
+    return github_service
+
+
 @router.get("", response_model=list[dict[str, Any]])
-async def list_repositories():
+async def list_repositories(service: GitHubService = Depends(get_service)):
     """
     List repositories accessible via GitHub authentication.
     Returns normalized repository metadata.
     """
-    return await github_service.list_repositories()
+    return await service.list_repositories()
 
 
 @router.get("/{owner}/{repo}", response_model=dict[str, Any])
-async def get_repository(owner: str, repo: str, db: Session = Depends(get_db)):
+async def get_repository(
+    owner: str, 
+    repo: str, 
+    db: Session = Depends(get_db),
+    service: GitHubService = Depends(get_service)
+):
     """
     Get detailed repository information.
     Syncs repository record into local database if not already tracked.
     """
-    repo_data = await github_service.get_repository(owner, repo)
+    repo_data = await service.get_repository(owner, repo)
     full_name = f"{owner}/{repo}"
     
     # Track/sync in local database
@@ -50,9 +61,10 @@ async def get_repository(owner: str, repo: str, db: Session = Depends(get_db)):
 async def list_repository_pull_requests(
     owner: str,
     repo: str,
-    state: str = Query("open", description="PR state: open, closed, or all")
+    state: str = Query("all", description="PR state: open, closed, or all"),
+    service: GitHubService = Depends(get_service)
 ):
     """
     List all pull requests for a given repository.
     """
-    return await github_service.list_pull_requests(owner, repo, state=state)
+    return await service.list_pull_requests(owner, repo, state=state)
