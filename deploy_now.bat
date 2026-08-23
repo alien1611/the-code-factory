@@ -15,22 +15,20 @@ if %errorlevel% neq 0 (
 cd ..
 
 echo.
-echo [2/3] Publishing directly to GitHub Pages (gh-pages branch)...
-npx --yes gh-pages -d frontend/dist -b gh-pages
-if %errorlevel% equ 0 (
-    echo [SUCCESS] Frontend deployed to GitHub Pages!
-) else (
-    echo [INFO] Syncing combined branch to origin...
-    git push -u origin combined --force
-)
+echo [2/3] Publishing to GitHub (main + combined branches)...
+git push -u origin main --force
+git push -u origin combined --force
 
 echo.
-echo [3/3] Deployment complete!
+echo [3/3] Publishing directly to GitHub Pages (gh-pages branch)...
+npx --yes gh-pages -d frontend/dist -b gh-pages
+
+echo.
 echo =========================================================
-echo   Your live application URLs:
+echo   Deployment Triggered Successfully!
 echo   - GitHub Pages: https://alien1611.github.io/the-code-factory/
 echo   - GitHub Actions: https://github.com/alien1611/the-code-factory/actions
-echo   - Vercel (1-Click): https://vercel.com/new (Select alien1611/the-code-factory)
+echo   - 1-Click Vercel: https://vercel.com/new
 echo =========================================================
 echo.
 pause
