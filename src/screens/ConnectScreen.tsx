@@ -59,36 +59,75 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
     { name: 'workflows:read', desc: 'Coordinate with existing GitHub Actions CI pipelines', status: 'OPTIONAL' }
   ];
 
-  const handleOAuthConnect = () => {
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const handleOAuthConnect = async () => {
     setIsAuthorizing(true);
+    setAuthError(null);
     setSyncStatus('syncing');
 
-    // Simulate real OAuth Handshake and Repo Discovery
-    setTimeout(() => {
-      setIsAuthorizing(false);
-      setSyncStatus('synced');
-      onConnect({
-        username: 'octocat',
-        org: selectedOrg,
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
-      });
-    }, 1200);
+    try {
+      // Check current backend user session or attempt default token
+      const res = await fetch('http://127.0.0.1:8000/api/auth/user');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.username) {
+          setIsAuthorizing(false);
+          setSyncStatus('synced');
+          onConnect({
+            username: data.username,
+            org: data.name || data.username,
+            avatarUrl: data.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'
+          });
+          navigate('/repos');
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Live backend check error:', err);
+    }
+
+    // If not already authenticated in backend, switch to PAT tab to enter token
+    setIsAuthorizing(false);
+    setSyncStatus('idle');
+    setAuthMode('pat');
   };
 
-  const handlePATSubmit = (e: React.FormEvent) => {
+  const handlePATSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!patToken.trim()) return;
 
     setIsVerifyingToken(true);
-    setTimeout(() => {
-      setIsVerifyingToken(false);
-      onConnect({
-        username: 'octocat-enterprise',
-        org: enterpriseHost ? enterpriseHost : 'github.internal',
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+    setAuthError(null);
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/auth/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: patToken.trim() })
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Invalid GitHub Token. Please check token permissions.');
+      }
+
+      const data = await res.json();
+      localStorage.setItem('github_pat', patToken.trim());
+
+      onConnect({
+        username: data.username || 'github-user',
+        org: data.name || data.username || 'Personal Workspace',
+        avatarUrl: data.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'
+      });
+
       navigate('/repos');
-    }, 1000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to authenticate token with GitHub';
+      setAuthError(msg);
+    } finally {
+      setIsVerifyingToken(false);
+    }
   };
 
   const handleProceedToRepos = () => {
@@ -303,6 +342,13 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
                   className="w-full bg-[#10141A] border border-[#2A3038] rounded-xl px-4 py-2.5 text-xs font-mono text-[#F2F1ED] placeholder-[#8E96A0] focus:outline-none focus:border-[#37E2C4]"
                 />
               </div>
+
+              {authError && (
+                <div className="p-3.5 rounded-xl bg-[#FF5C5C]/10 border border-[#FF5C5C]/40 text-[#FF5C5C] text-xs font-mono flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-[#FF5C5C]" />
+                  <span>{authError}</span>
+                </div>
+              )}
 
               <button
                 type="submit"
