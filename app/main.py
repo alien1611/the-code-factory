@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.pull_requests import router as pull_requests_router
 from app.api.repositories import router as repositories_router
@@ -56,6 +57,7 @@ def create_app() -> FastAPI:
 
     # Register Routers
     app.include_router(health_router)
+    app.include_router(auth_router)
     app.include_router(repositories_router)
     app.include_router(pull_requests_router)
     app.include_router(verifications_router)
