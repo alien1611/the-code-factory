@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { RefreshCw, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import { GithubIcon } from '../components/GithubIcon';
+import { BACKEND_URL } from '../lib/api';
 
 interface OAuthCallbackScreenProps {
   onConnect: (accountData?: { username: string; org: string; avatarUrl: string }) => void;
@@ -23,7 +24,7 @@ export const OAuthCallbackScreen: React.FC<OAuthCallbackScreenProps> = ({ onConn
 
     async function exchangeOAuthCode() {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/auth/oauth/callback', {
+        const res = await fetch(`${BACKEND_URL}/api/auth/oauth/callback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code })

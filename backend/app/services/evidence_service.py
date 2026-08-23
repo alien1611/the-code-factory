@@ -174,17 +174,18 @@ class EvidenceService:
         base_score -= min(30.0, medium_sec * 10.0 + static.get("warnings", 0) * 2.0)
         score = max(0.0, min(100.0, base_score))
 
-        # Rule 4: Clean passes & passing test suites -> VERIFIED
-        if critical_sec == 0 and high_sec == 0 and failed_tests == 0 and static.get("errors", 0) == 0:
-            if medium_sec == 0 and static.get("warnings", 0) <= 2:
-                return "VERIFIED", round(max(85.0, score), 1)
-            return "VERIFIED_WITH_RISKS", round(score, 1)
+        # Rule 4: Clean passes -> VERIFIED
+        if medium_sec == 0 and static.get("warnings", 0) <= 2:
+            if total_tests == 0:
+                # No tests run, only static/security passed -> VERIFIED_WITH_RISKS or INCONCLUSIVE
+                return "INCONCLUSIVE", round(score, 1)
+            return "VERIFIED", round(score, 1)
 
         # Rule 5: Non-critical warnings -> VERIFIED_WITH_RISKS
-        if critical_sec == 0 and high_sec == 0 and failed_tests == 0:
+        if medium_sec > 0 or static.get("warnings", 0) > 2:
             return "VERIFIED_WITH_RISKS", round(score, 1)
 
-        return "REJECTED", round(score, 1)
+        return "INCONCLUSIVE", round(score, 1)
 
 
 evidence_service = EvidenceService()

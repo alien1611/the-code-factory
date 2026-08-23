@@ -6,8 +6,19 @@
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF.svg?logo=vite)](https://vitejs.dev)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB.svg?logo=python)](https://python.org)
 [![Tests](https://img.shields.io/badge/Tests-100%25%20Passing-brightgreen.svg)]()
+[![GitHub Actions CI](https://img.shields.io/badge/GitHub_Actions-CI_Passing-2088FF.svg?logo=github-actions)](https://github.com/alien1611/the-code-factory/actions)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Deployed-22c55e.svg?logo=github)](https://alien1611.github.io/the-code-factory/)
 
 ---
+
+## 🚀 Quick Deployment
+
+Full deployment instructions are available in [DEPLOYMENT.md](DEPLOYMENT.md).
+
+- **GitHub Pages (Frontend):** Automated via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml).
+- **Docker / GHCR (Backend):** Automated via [`.github/workflows/deploy-backend-docker.yml`](.github/workflows/deploy-backend-docker.yml).
+- **1-Click Render Cloud:** Uses [`render.yaml`](render.yaml).
+- **Local / VPS Docker Stack:** Run `docker-compose up -d --build`.
 
 ## 🏗️ Architecture & Monorepo Directory Layout
 

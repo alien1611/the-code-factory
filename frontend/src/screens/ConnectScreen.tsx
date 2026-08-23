@@ -16,6 +16,7 @@ import {
   GitBranch
 } from 'lucide-react';
 import { GithubIcon } from '../components/GithubIcon';
+import { BACKEND_URL } from '../lib/api';
 
 interface ConnectScreenProps {
   isConnected: boolean;
@@ -48,7 +49,7 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
   useEffect(() => {
     async function checkCurrentSession() {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/auth/user');
+        const res = await fetch(`${BACKEND_URL}/api/auth/user`);
         if (res.ok) {
           const data = await res.json();
           if (data.authenticated && data.username) {
@@ -77,7 +78,7 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
     setIsLoading(true);
     setAuthError(null);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/auth/oauth/url');
+      const res = await fetch(`${BACKEND_URL}/api/auth/oauth/url`);
       if (res.ok) {
         const data = await res.json();
         if (data.client_id_configured && data.url) {
@@ -106,7 +107,7 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
     setAuthError(null);
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/auth/connect-user', {
+      const res = await fetch(`${BACKEND_URL}/api/auth/connect-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: cleanUser })
@@ -150,7 +151,7 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
     setAuthError(null);
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/auth/connect', {
+      const res = await fetch(`${BACKEND_URL}/api/auth/connect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: patToken.trim() })
@@ -190,7 +191,7 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
 
   const handleDisconnectAction = async () => {
     try {
-      await fetch('http://127.0.0.1:8000/api/auth/disconnect', { method: 'POST' });
+      await fetch(`${BACKEND_URL}/api/auth/disconnect`, { method: 'POST' });
     } catch (e) {}
     localStorage.removeItem('github_pat');
     setConnectedUser(null);

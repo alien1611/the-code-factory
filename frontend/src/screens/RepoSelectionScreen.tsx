@@ -19,7 +19,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Repo, PullRequest, Branch } from '../lib/types';
-import { getRepos, getPullRequests, getBranches, createPullRequest, createVerifyJob } from '../lib/api';
+import { getRepos, getPullRequests, getBranches, createPullRequest, createVerifyJob, BACKEND_URL } from '../lib/api';
 
 interface RepoSelectionScreenProps {
   onStartVerify: (jobId: string, repoFullName: string, prNumber: number) => void;
@@ -57,7 +57,7 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
       setIsLoadingRepos(true);
       try {
         // Fetch active user
-        fetch('http://127.0.0.1:8000/api/auth/user')
+        fetch(`${BACKEND_URL}/api/auth/user`)
           .then(r => r.ok ? r.json() : null)
           .then(data => {
             if (data?.authenticated && data.username) {
@@ -88,7 +88,7 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
     setIsAddingRepo(true);
     try {
       const parts = cleanRepo.split('/');
-      const res = await fetch(`http://127.0.0.1:8000/api/repositories/${parts[0]}/${parts[1]}`);
+      const res = await fetch(`${BACKEND_URL}/api/repositories/${parts[0]}/${parts[1]}`);
       const newRepo: Repo = {
         id: `repo-${Date.now()}`,
         full_name: cleanRepo,
