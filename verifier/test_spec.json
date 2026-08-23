@@ -1,27 +1,16 @@
 {
   "verdict": "PASS",
   "requirements": [
-    "Users can only access their own user profile and must be blocked from viewing profiles of other users."
+    "Users can only access their own profile."
   ],
   "conditions": [
-    "Access is granted when requesting_user_id matches requested_user_id.",
-    "Access is denied when requesting_user_id does not match requested_user_id."
+    "Access is allowed if requesting_user_id is equal to requested_user_id.",
+    "Access must be denied if requesting_user_id is not equal to requested_user_id."
   ],
   "violations": [],
   "tests": [
     {
-      "name": "unauthorized_access_denied",
-      "type": "authorization",
-      "target": "get_profile",
-      "inputs": {
-        "requesting_user_id": 101,
-        "requested_user_id": 102
-      },
-      "expected": "DENY",
-      "description": "Verify that user 101 cannot access the profile of user 102."
-    },
-    {
-      "name": "authorized_access_allowed",
+      "name": "access_own_profile",
       "type": "authorization",
       "target": "get_profile",
       "inputs": {
@@ -29,7 +18,18 @@
         "requested_user_id": 101
       },
       "expected": "ALLOW",
-      "description": "Verify that user 101 can access their own profile."
+      "description": "Verify that user 101 can successfully access profile 101."
+    },
+    {
+      "name": "access_other_profile",
+      "type": "authorization",
+      "target": "get_profile",
+      "inputs": {
+        "requesting_user_id": 101,
+        "requested_user_id": 102
+      },
+      "expected": "DENY",
+      "description": "Verify that user 101 cannot access profile 102 and receives a PermissionError."
     }
   ]
 }

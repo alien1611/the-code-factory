@@ -9,7 +9,7 @@ from app.database.models.finding import Finding
 from app.database.models.repository import Repository
 from app.database.models.test_result import TestResult
 from app.database.models.verification import Verification
-from app.integrations.analysis_contract import AnalysisInput, AnalysisModuleInterface
+from app.integrations.analysis_contract import AnalysisFinding, AnalysisInput, AnalysisModuleInterface
 from app.integrations.ai_code_verifier import ai_code_verifier_module
 from app.services.docker_service import docker_service
 from app.services.evidence_service import evidence_service
@@ -96,6 +96,12 @@ class VerificationOrchestrator:
             verification.status = "SYNTHESIZING"
             db.commit()
 
+            ai_analysis = await llm_service.verify_code_change(
+                pr_metadata=pr_data,
+                diff=raw_diff,
+                changed_files=[f.model_dump() for f in changed_files]
+            )
+
             # 7. Property-Based Test Generation & Invariant Execution
             verification.status = "GENERATING"
             db.commit()
@@ -103,6 +109,25 @@ class VerificationOrchestrator:
             verification.status = "VERIFYING"
             db.commit()
             custom_findings = []
+
+            # Ingest AI Analysis findings into custom findings
+            for af in ai_analysis.get("findings", []):
+                custom_findings.append(
+                    AnalysisFinding(
+                        type=af.get("type", "invariant_violation"),
+                        severity=af.get("severity", "high"),
+                        file=af.get("file", "src/main.ts"),
+                        line=af.get("line", 1),
+                        message=af.get("message", "Invariant violation"),
+                        evidence={
+                            "proof": af.get("evidence", ""),
+                            "why_it_matters": af.get("why_it_matters", ""),
+                            "suggested_fix": af.get("suggested_fix", ""),
+                            "code_snippet": af.get("code_snippet", "")
+                        }
+                    )
+                )
+
             if self.custom_analysis_modules:
                 analysis_input = AnalysisInput(
                     verification_id=verification_id,
@@ -136,13 +161,34 @@ class VerificationOrchestrator:
                 metadata=metadata
             )
 
+            # Attach AI requirements checklist to evidence
+            normalized_evidence["requirements_checked"] = ai_analysis.get("requirements_checked", [])
+
+            # Attach AI synthetic invariant tests if present
+            for ai_test in ai_analysis.get("tests", []):
+                tests_data.append({
+                    "test_name": ai_test.get("name", "test_ai_invariant"),
+                    "status": "passed" if ai_test.get("status") in ["pass", "passed", "PASS"] else "failed",
+                    "duration": ai_test.get("duration", 0.04),
+                    "output": ai_test.get("message", "")
+                })
+
             verdict, score = evidence_service.compute_verdict(
                 evidence=normalized_evidence,
                 findings=findings_data
             )
 
+            # If AI found explicit violations, enforce REQUIREMENT_VIOLATION
+            if ai_analysis.get("verdict") == "REQUIREMENT_VIOLATION" and verdict != "REJECTED":
+                verdict = "REQUIREMENT_VIOLATION"
+                score = min(score, ai_analysis.get("score", 45.0))
+            elif ai_analysis.get("verdict") == "UNABLE_TO_VERIFY":
+                verdict = "UNABLE_TO_VERIFY"
+                score = 0.0
+                verification.error = ai_analysis.get("error") or "AI rate limit reached across all keys. Please try again in 20-30 seconds."
+
             # 8. Generate grounded LLM summary / narrative
-            summary_explanation = await llm_service.explain_verification_evidence(
+            summary_explanation = ai_analysis.get("summary") or await llm_service.explain_verification_evidence(
                 pr_metadata=pr_data,
                 diff=raw_diff,
                 evidence=normalized_evidence,

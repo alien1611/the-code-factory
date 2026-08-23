@@ -28,9 +28,27 @@ class Settings(BaseSettings):
     GITHUB_API_URL: str = "https://api.github.com"
     GITHUB_WEBHOOK_SECRET: str | None = None
 
-    # Gemini LLM
+    # Gemini LLM (Supports 1-5 keys or comma-separated list with automatic failover)
     GEMINI_API_KEY: str | None = None
-    GEMINI_MODEL: str = "gemini-1.5-pro"
+    GEMINI_API_KEYS: str | list[str] | None = None
+    GEMINI_API_KEY_1: str | None = None
+    GEMINI_API_KEY_2: str | None = None
+    GEMINI_API_KEY_3: str | None = None
+    GEMINI_API_KEY_4: str | None = None
+    GEMINI_API_KEY_5: str | None = None
+    GEMINI_MODEL: str = "gemini-3.6-flash"
+
+    def get_gemini_api_keys(self) -> list[str]:
+        keys = []
+        if isinstance(self.GEMINI_API_KEYS, list):
+            keys.extend(self.GEMINI_API_KEYS)
+        elif isinstance(self.GEMINI_API_KEYS, str) and self.GEMINI_API_KEYS.strip():
+            keys.extend([k.strip() for k in self.GEMINI_API_KEYS.split(",") if k.strip()])
+
+        for k in [self.GEMINI_API_KEY, self.GEMINI_API_KEY_1, self.GEMINI_API_KEY_2, self.GEMINI_API_KEY_3, self.GEMINI_API_KEY_4, self.GEMINI_API_KEY_5]:
+            if k and k.strip() and k.strip() not in keys:
+                keys.append(k.strip())
+        return keys
 
     # Docker Sandbox Execution
     DOCKER_ENABLED: bool = False

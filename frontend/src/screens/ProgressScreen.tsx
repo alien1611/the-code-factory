@@ -92,13 +92,17 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({
 
         {/* Action buttons */}
         <div className="flex items-center gap-3">
-          {isComplete ? (
+          {isComplete || isFailed ? (
             <button
               onClick={handleViewResults}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded bg-[#37E2C4] hover:bg-[#37E2C4]/90 text-[#0B0D10] font-mono font-bold text-xs shadow-[0_0_20px_rgba(55,226,196,0.4)] transition-all cursor-pointer animate-pulse"
+              className={`inline-flex items-center gap-2 px-6 py-2.5 rounded text-[#0B0D10] font-mono font-bold text-xs shadow-lg transition-all cursor-pointer ${
+                isFailed 
+                  ? 'bg-[#F5A623] hover:bg-[#F5A623]/90 shadow-[0_0_20px_rgba(245,166,35,0.4)]' 
+                  : 'bg-[#37E2C4] hover:bg-[#37E2C4]/90 shadow-[0_0_20px_rgba(55,226,196,0.4)] animate-pulse'
+              }`}
               data-testid="view-results-btn"
             >
-              <span>VIEW FINAL VERDICT</span>
+              <span>{isFailed ? 'INSPECT FAILURE DETAILS' : 'VIEW FINAL VERDICT'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : (

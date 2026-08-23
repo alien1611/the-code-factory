@@ -101,7 +101,7 @@ export interface VerificationIssue {
 
 export interface VerifyResult {
   job_id: string;
-  verdict: "VERIFIED" | "REQUIREMENT_VIOLATION";
+  verdict: "VERIFIED" | "REQUIREMENT_VIOLATION" | "UNABLE_TO_VERIFY" | "FAILED";
   repo_full_name?: string;
   pr_number?: number;
   pr_title?: string;
@@ -110,11 +110,12 @@ export interface VerifyResult {
   commit_hash?: string;
   timestamp?: string;
   duration_sec?: number;
+  error_message?: string;
   summary: {
-    tests: { status: "PASS" | "FAIL"; passed: number; total: number };
-    security: { status: "PASS" | "FAIL"; issue_count: number };
-    ai_check: { status: "PASS" | "FAIL" };
-    requirements: { status: "PASS" | "FAIL" };
+    tests: { status: "PASS" | "FAIL" | "N/A"; passed: number; total: number };
+    security: { status: "PASS" | "FAIL" | "N/A"; issue_count: number };
+    ai_check: { status: "PASS" | "FAIL" | "N/A" };
+    requirements: { status: "PASS" | "FAIL" | "N/A" };
   };
   tests: TestCase[];
   issues: VerificationIssue[];

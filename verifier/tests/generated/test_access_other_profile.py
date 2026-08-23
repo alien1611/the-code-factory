@@ -1,9 +1,9 @@
 from app.profile import get_profile
 
 
-def test_unauthorized_access_denied():
+def test_access_other_profile():
     """
-    Verify that user 101 cannot access the profile of user 102.
+    Verify that user 101 cannot access profile 102 and receives a PermissionError.
     """
 
     try:

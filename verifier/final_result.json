@@ -6,11 +6,11 @@
   "final_verdict": "PASS",
   "evidence": [
     {
-      "name": "tests/generated/test_authorized_access_allowed.py::test_authorized_access_allowed",
+      "name": "tests/generated/test_access_other_profile.py::test_access_other_profile",
       "outcome": "passed"
     },
     {
-      "name": "tests/generated/test_unauthorized_access_denied.py::test_unauthorized_access_denied",
+      "name": "tests/generated/test_access_own_profile.py::test_access_own_profile",
       "outcome": "passed"
     }
   ]

@@ -52,7 +52,7 @@ function AppContent() {
     setCurrentJobId(jobId);
     setCurrentRepo(repoFullName);
     setCurrentPR(prNumber);
-    setForcedScenario(prNumber === 142 || repoFullName.includes('payment') ? 'verified' : (prNumber === 89 ? 'violation' : undefined));
+    setForcedScenario(undefined);
   };
 
   const handleSelectScenario = async (type: 'verified' | 'violation') => {
