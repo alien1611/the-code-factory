@@ -2,9 +2,9 @@ name: Continuous Integration (CI)
 
 on:
   push:
-    branches: [ "main", "ai-logic", "master" ]
+    branches: [ "main", "combined", "ai-logic", "master" ]
   pull_request:
-    branches: [ "main", "ai-logic", "master" ]
+    branches: [ "main", "combined", "ai-logic", "master" ]
   workflow_dispatch:
 
 jobs:

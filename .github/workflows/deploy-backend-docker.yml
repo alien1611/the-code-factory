@@ -2,7 +2,7 @@ name: Build & Publish Backend Docker Image
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "combined", "ai-logic" ]
     paths:
       - "backend/**"
       - "verifier/**"
