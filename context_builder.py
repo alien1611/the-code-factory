@@ -128,22 +128,27 @@ class RepositoryContext:
         all_chunks: Complete list of granular FunctionContext chunks for RAG indexing.
         changed_chunks: Filtered subset of changed functions for targeted PR verification.
         total_findings: Total number of static-analysis findings.
+        pr_description: Optional PR description or requirements text.
     """
     repository_path: str
     files: list[FileContext] = field(default_factory=list)
     all_chunks: list[FunctionContext] = field(default_factory=list)
     changed_chunks: list[FunctionContext] = field(default_factory=list)
     total_findings: int = 0
+    pr_description: Optional[str] = None
 
     def to_dict(self) -> dict[str, Any]:
         """Converts to a JSON-serializable dictionary."""
-        return {
+        data: dict[str, Any] = {
             "repository_path": self.repository_path,
             "files": [f.to_dict() for f in self.files],
             "all_chunks": [c.to_dict() for c in self.all_chunks],
             "changed_chunks": [c.to_dict() for c in self.changed_chunks],
             "total_findings": self.total_findings,
         }
+        if self.pr_description:
+            data["pr_description"] = self.pr_description
+        return data
 
     def to_json(self, indent: int = 2) -> str:
         """Serializes directly to a formatted JSON string."""
@@ -373,6 +378,7 @@ def build_repository_context(
     findings: Optional[list[Finding]] = None,
     changed_lines: Optional[dict[str, list[int]]] = None,
     repository_path: str = "./",
+    pr_description: Optional[str] = None,
 ) -> RepositoryContext:
     """
     Assembles unified context across all repository files.
@@ -384,6 +390,7 @@ def build_repository_context(
         findings: Consolidated list of static-analysis / security findings.
         changed_lines: Mapping from file to list of PR changed line numbers.
         repository_path: Root directory path of the repository.
+        pr_description: Optional PR description or requirements text.
 
     Returns:
         Structured RepositoryContext ready for vector DB indexing and verification.
@@ -422,6 +429,8 @@ def build_repository_context(
 
         for chunk in fc.functions:
             if chunk.is_changed:
+                if pr_description:
+                    chunk.metadata["pr_description"] = pr_description
                 changed_chunks.append(chunk)
 
     return RepositoryContext(
@@ -430,6 +439,7 @@ def build_repository_context(
         all_chunks=all_chunks,
         changed_chunks=changed_chunks,
         total_findings=len(findings_list),
+        pr_description=pr_description,
     )
 
 

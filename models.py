@@ -338,9 +338,19 @@ class AnalysisResult:
     Attributes:
         files: List of FileMetadata objects extracted by the repository parser.
         findings: Consolidated list of Finding objects from all verification layers.
+        repository_path: Target repository path analyzed.
+        total_files_scanned: Total count of files parsed.
+        execution_time_ms: Wall-clock execution time in milliseconds.
     """
     files: list[FileMetadata] = field(default_factory=list)
     findings: list[Finding] = field(default_factory=list)
+    repository_path: str = ""
+    total_files_scanned: int = 0
+    execution_time_ms: float = 0.0
+
+    def __post_init__(self) -> None:
+        if not self.total_files_scanned and self.files:
+            self.total_files_scanned = len(self.files)
 
     def to_dict(self) -> dict[str, Any]:
         """Converts the entire analysis result to a nested JSON-serializable dictionary."""
@@ -362,6 +372,9 @@ class AnalysisResult:
                 f if isinstance(f, Finding) else Finding.from_dict(f)
                 for f in data.get("findings", [])
             ],
+            repository_path=data.get("repository_path", ""),
+            total_files_scanned=data.get("total_files_scanned", len(data.get("files", []))),
+            execution_time_ms=data.get("execution_time_ms", 0.0),
         )
 
     @classmethod
@@ -383,6 +396,48 @@ class AnalysisResult:
     def get_findings_by_file(self, file_path: str) -> list[Finding]:
         """Filters findings belonging to a specific file path."""
         return [f for f in self.findings if f.file == file_path]
+
+
+@dataclass
+class PRAnalysisResult:
+    """
+    Standardized payload returned by analyze_pr() for FastAPI backend integration.
+    Contains overall status, repository metadata, analysis statistics,
+    AST changed code mappings, normalized findings, and RAG context units.
+    """
+    status: str = "completed"
+    repository: dict[str, Any] = field(default_factory=lambda: {"name": "", "commit_sha": "", "languages": []})
+    analysis: dict[str, Any] = field(default_factory=lambda: {"files_analyzed": 0, "functions_found": 0, "classes_found": 0})
+    changed_code: list[dict[str, Any]] = field(default_factory=list)
+    findings: list[dict[str, Any]] = field(default_factory=list)
+    contexts: list[dict[str, Any]] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts the PR analysis result to a JSON-serializable dictionary."""
+        return asdict(self)
+
+    def to_json(self, indent: int = 2) -> str:
+        """Serializes the PR analysis result to formatted JSON."""
+        return json.dumps(self.to_dict(), indent=indent)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Self:
+        """Constructs a PRAnalysisResult from a dictionary / deserialized JSON."""
+        return cls(
+            status=data.get("status", "completed"),
+            repository=data.get("repository", {"name": "", "commit_sha": "", "languages": []}),
+            analysis=data.get("analysis", {"files_analyzed": 0, "functions_found": 0, "classes_found": 0}),
+            changed_code=data.get("changed_code", []),
+            findings=data.get("findings", []),
+            contexts=data.get("contexts", []),
+            errors=data.get("errors", []),
+        )
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        """Constructs a PRAnalysisResult directly from a JSON string."""
+        return cls.from_dict(json.loads(json_str))
 
 
 # ==============================================================================

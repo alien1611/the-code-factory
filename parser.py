@@ -681,9 +681,15 @@ LANGUAGE_REGISTRY: dict[str, LanguageConfig] = {
         grammar_loader=_load_javascript_language,
         extractor=extract_javascript,
     ),
+    "TypeScript": LanguageConfig(
+        name="TypeScript",
+        extensions={".ts", ".tsx", ".mts", ".cts"},
+        grammar_loader=_load_javascript_language,
+        extractor=extract_javascript,
+    ),
     "C++": LanguageConfig(
         name="C++",
-        extensions={".cpp", ".cc", ".cxx", ".c++", ".hpp", ".hh", ".hxx", ".h"},
+        extensions={".cpp", ".cc", ".cxx", ".c++", ".hpp", ".hh", ".hxx", ".h", ".c", ".ino"},
         grammar_loader=_load_cpp_language,
         extractor=extract_cpp,
     ),
@@ -732,15 +738,13 @@ def get_parser(language: str) -> Optional[Parser]:
         return None
 
 
-def parse_file(
-    file_path: str | Path,
+def parse_source(
+    source_code: str | bytes,
+    filename: str | Path = "snippet.py",
 ) -> tuple[Optional[tree_sitter.Tree], Optional[bytes], list[str]]:
-    """Reads and parses a source file into a Tree-sitter AST."""
-    path = Path(file_path)
+    """Parses in-memory source code (string or bytes) into a Tree-sitter AST."""
+    path = Path(filename)
     errors: list[str] = []
-
-    if not path.is_file():
-        return None, None, [f"File does not exist: {path}"]
 
     lang_name = detect_language(path)
     if not lang_name:
@@ -750,12 +754,12 @@ def parse_file(
     if not parser:
         return None, None, [f"No Tree-sitter grammar available for language: {lang_name}"]
 
-    try:
-        source_bytes = path.read_bytes()
-    except PermissionError:
-        return None, None, [f"Permission denied reading file: {path}"]
-    except Exception as e:
-        return None, None, [f"Error reading file {path}: {str(e)}"]
+    if source_code is None:
+        source_bytes = b""
+    elif isinstance(source_code, str):
+        source_bytes = source_code.encode("utf-8")
+    else:
+        source_bytes = source_code
 
     try:
         tree = parser.parse(source_bytes)
@@ -764,6 +768,25 @@ def parse_file(
         return tree, source_bytes, errors
     except Exception as e:
         return None, source_bytes, [f"Tree-sitter parse failure: {str(e)}"]
+
+
+def parse_file(
+    file_path: str | Path,
+) -> tuple[Optional[tree_sitter.Tree], Optional[bytes], list[str]]:
+    """Reads and parses a source file into a Tree-sitter AST."""
+    path = Path(file_path)
+
+    if not path.is_file():
+        return None, None, [f"File does not exist: {path}"]
+
+    try:
+        source_bytes = path.read_bytes()
+    except PermissionError:
+        return None, None, [f"Permission denied reading file: {path}"]
+    except Exception as e:
+        return None, None, [f"Error reading file {path}: {str(e)}"]
+
+    return parse_source(source_bytes, path)
 
 
 def extract_functions(
@@ -803,12 +826,18 @@ def extract_imports(
 # 6. PUBLIC ANALYSIS INTERFACE
 # ==============================================================================
 
-def analyze_file(file_path: str | Path) -> FileMetadata:
-    """Analyzes a single source file and returns normalized FileMetadata."""
-    path = Path(file_path)
+def analyze_source(
+    source_code: str | bytes,
+    filename: str | Path = "snippet.py",
+) -> FileMetadata:
+    """
+    Analyzes an in-memory source code string or bytes and returns normalized FileMetadata.
+    Determines language from filename extension and extracts identical AST metadata as analyze_file().
+    """
+    path = Path(filename)
     lang_name = detect_language(path) or "Unknown"
 
-    tree, _, errors = parse_file(path)
+    tree, _, errors = parse_source(source_code, path)
     if not tree:
         return FileMetadata(
             path=str(path.as_posix()),
@@ -844,6 +873,34 @@ def analyze_file(file_path: str | Path) -> FileMetadata:
         classes=classes,
         parse_errors=errors,
     )
+
+
+def analyze_file(file_path: str | Path) -> FileMetadata:
+    """Analyzes a single source file on disk and returns normalized FileMetadata."""
+    path = Path(file_path)
+    if not path.is_file():
+        return FileMetadata(
+            path=str(path.as_posix()),
+            language=detect_language(path) or "Unknown",
+            imports=[],
+            functions=[],
+            classes=[],
+            parse_errors=[f"File does not exist: {path}"],
+        )
+
+    try:
+        source_bytes = path.read_bytes()
+    except Exception as e:
+        return FileMetadata(
+            path=str(path.as_posix()),
+            language=detect_language(path) or "Unknown",
+            imports=[],
+            functions=[],
+            classes=[],
+            parse_errors=[f"Error reading file {path}: {str(e)}"],
+        )
+
+    return analyze_source(source_bytes, path)
 
 
 def analyze_repository(
@@ -955,6 +1012,45 @@ class TestParser(unittest.TestCase):
             self.assertIsNotNone(meta)
             self.assertEqual(meta.language, "Java")
             self.assertEqual(len(meta.classes), 1)
+
+    def test_analyze_source_equivalence_with_file(self) -> None:
+        """Verifies that analyze_source and analyze_file produce identical FileMetadata."""
+        p = Path("test_repository/calculator.py")
+        if p.exists():
+            file_meta = analyze_file(p)
+            code_str = p.read_text(encoding="utf-8")
+            src_meta = analyze_source(code_str, "calculator.py")
+
+            self.assertEqual(src_meta.language, file_meta.language)
+            self.assertEqual(len(src_meta.functions), len(file_meta.functions))
+            self.assertEqual(len(src_meta.classes), len(file_meta.classes))
+            self.assertEqual([f.name for f in src_meta.functions], [f.name for f in file_meta.functions])
+
+    def test_analyze_source_in_memory_languages(self) -> None:
+        """Verifies in-memory parsing across JS, TS, C++, Java snippets."""
+        # JavaScript
+        js_code = "class AuthService { login(user, pass) { return true; } }"
+        js_meta = analyze_source(js_code, "auth.js")
+        self.assertEqual(js_meta.language, "JavaScript")
+        self.assertEqual(len(js_meta.classes), 1)
+
+        # TypeScript
+        ts_code = "export interface Config { timeout: number; }\nexport function init(c: Config): boolean { return true; }"
+        ts_meta = analyze_source(ts_code, "config.ts")
+        self.assertEqual(ts_meta.language, "TypeScript")
+        self.assertEqual(len(ts_meta.functions), 1)
+
+        # C++
+        cpp_code = "class Engine { public: void start() {} };"
+        cpp_meta = analyze_source(cpp_code, "engine.cpp")
+        self.assertEqual(cpp_meta.language, "C++")
+        self.assertEqual(len(cpp_meta.classes), 1)
+
+        # Java
+        java_code = "public class OrderService { public void placeOrder(String id) {} }"
+        java_meta = analyze_source(java_code, "OrderService.java")
+        self.assertEqual(java_meta.language, "Java")
+        self.assertEqual(len(java_meta.classes), 1)
 
 
 if __name__ == "__main__":
