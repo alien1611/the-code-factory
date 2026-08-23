@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { LandingScreen } from './screens/LandingScreen';
 import { ConnectScreen } from './screens/ConnectScreen';
+import { OAuthCallbackScreen } from './screens/OAuthCallbackScreen';
 import { RepoSelectionScreen } from './screens/RepoSelectionScreen';
 import { ProgressScreen } from './screens/ProgressScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
@@ -115,6 +116,14 @@ function AppContent() {
                 isConnected={isConnected}
                 onConnect={handleConnect}
                 onDisconnect={handleDisconnect}
+              />
+            } 
+          />
+          <Route 
+            path="/oauth/callback" 
+            element={
+              <OAuthCallbackScreen 
+                onConnect={handleConnect}
               />
             } 
           />

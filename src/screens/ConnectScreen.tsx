@@ -73,6 +73,30 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
     checkCurrentSession();
   }, []);
 
+  const handleOAuthRedirect = async () => {
+    setIsLoading(true);
+    setAuthError(null);
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/auth/oauth/url');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.client_id_configured && data.url) {
+          window.location.href = data.url;
+          return;
+        } else {
+          setAuthError('GitHub OAuth App is not configured in backend .env yet. Paste your GitHub Token below for instant access, or configure GITHUB_CLIENT_ID!');
+          setAuthMode('pat');
+        }
+      } else {
+        setAuthError('Backend OAuth service unavailable.');
+      }
+    } catch (err) {
+      setAuthError('Failed to initialize GitHub OAuth redirect.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleConnectByUsername = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanUser = githubUsername.trim().replace(/^@+/, '');
@@ -265,22 +289,28 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
               </div>
             </div>
           ) : (
-            <div className="bg-[#0B0D10] border border-[#232A35] p-6 sm:p-7 rounded-2xl space-y-6 shadow-xl">
+            <div className="bg-[#0B0D10] border border-[#232A35] p-6 sm:p-7 rounded-2xl space-y-5 shadow-xl">
               
+              {/* Primary 1-Click GitHub OAuth Button */}
+              <button
+                type="button"
+                onClick={handleOAuthRedirect}
+                disabled={isLoading}
+                className="w-full py-4 px-6 rounded-xl bg-[#2EA043] hover:bg-[#2EA043]/90 text-white font-mono text-sm font-bold shadow-[0_0_25px_rgba(46,160,67,0.35)] transition-all flex items-center justify-center gap-3 cursor-pointer hover:scale-[1.02] disabled:opacity-50"
+              >
+                <GithubIcon className="w-5 h-5 text-white" />
+                <span>AUTHORIZE WITH GITHUB (1-CLICK OAUTH)</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 border-t border-[#1F2630]" />
+                <span className="text-[10px] font-mono text-[#8E96A0]">OR DIRECT TOKEN / USERNAME</span>
+                <div className="flex-1 border-t border-[#1F2630]" />
+              </div>
+
               {/* Tab Selector */}
               <div className="flex items-center p-1 rounded-xl bg-[#10141A] border border-[#232A35]">
-                <button
-                  onClick={() => setAuthMode('username')}
-                  className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                    authMode === 'username'
-                      ? 'bg-[#1C222B] text-[#37E2C4] border border-[#37E2C4]/40 shadow-[0_0_15px_rgba(55,226,196,0.15)]'
-                      : 'text-[#8E96A0] hover:text-[#F2F1ED]'
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  <span>GITHUB USERNAME / ORG</span>
-                </button>
-
                 <button
                   onClick={() => setAuthMode('pat')}
                   className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
@@ -291,6 +321,18 @@ export const ConnectScreen: React.FC<ConnectScreenProps> = ({
                 >
                   <Key className="w-4 h-4" />
                   <span>PERSONAL ACCESS TOKEN</span>
+                </button>
+
+                <button
+                  onClick={() => setAuthMode('username')}
+                  className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    authMode === 'username'
+                      ? 'bg-[#1C222B] text-[#37E2C4] border border-[#37E2C4]/40 shadow-[0_0_15px_rgba(55,226,196,0.15)]'
+                      : 'text-[#8E96A0] hover:text-[#F2F1ED]'
+                  }`}
+                >
+                  <User className="w-4 h-4" />
+                  <span>USERNAME / ORG</span>
                 </button>
               </div>
 
