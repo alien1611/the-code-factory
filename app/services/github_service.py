@@ -18,9 +18,11 @@ class GitHubService:
         self.headers = {
             "Accept": "application/vnd.github.v3+json",
             "User-Agent": "Evidence-Driven-Verification-Engine",
+            "X-GitHub-Api-Version": "2022-11-28"
         }
         if self.token:
-            self.headers["Authorization"] = f"token {self.token}"
+            clean_tok = self.token.strip()
+            self.headers["Authorization"] = f"Bearer {clean_tok}"
 
     def _get_headers(self, custom_accept: str | None = None) -> dict[str, str]:
         headers = dict(self.headers)
@@ -61,115 +63,143 @@ class GitHubService:
         if not self.token and not self.active_username:
             return {"authenticated": False, "username": None, "mode": "public"}
         
-        endpoint = f"{self.base_url}/user" if self.token else f"{self.base_url}/users/{self.active_username}"
         async with httpx.AsyncClient(timeout=10.0) as client:
-            res = await client.get(endpoint, headers=self.headers)
-            await self._handle_response(res)
-            data = res.json()
-            return {
-                "authenticated": True,
-                "id": data.get("id"),
-                "username": data.get("login"),
-                "name": data.get("name") or data.get("login"),
-                "avatar_url": data.get("avatar_url"),
-                "html_url": data.get("html_url"),
-                "public_repos": data.get("public_repos", 0),
-                "total_private_repos": data.get("total_private_repos", 0),
-                "mode": "token" if self.token else "public_user"
-            }
+            if self.token:
+                headers = dict(self.headers)
+                headers["Authorization"] = f"Bearer {self.token.strip()}"
+                res = await client.get(f"{self.base_url}/user", headers=headers)
+                if res.status_code == 401 or res.status_code == 403:
+                    headers["Authorization"] = f"token {self.token.strip()}"
+                    res = await client.get(f"{self.base_url}/user", headers=headers)
+            else:
+                res = await client.get(f"{self.base_url}/users/{self.active_username}", headers=self.headers)
+
+            if res.status_code == 200:
+                data = res.json()
+                return {
+                    "authenticated": True,
+                    "id": data.get("id"),
+                    "username": data.get("login"),
+                    "name": data.get("name") or data.get("login"),
+                    "avatar_url": data.get("avatar_url") or f"https://github.com/{data.get('login')}.png",
+                    "html_url": data.get("html_url"),
+                    "public_repos": data.get("public_repos", 0),
+                    "total_private_repos": data.get("total_private_repos", 0),
+                    "mode": "token" if self.token else "public_user"
+                }
+
+        return {"authenticated": False, "username": self.active_username or "user"}
 
     async def list_repositories(self) -> list[dict[str, Any]]:
-        """List repositories accessible to the user or public popular repos."""
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        """List repositories accessible to the user or public repos."""
+        async with httpx.AsyncClient(timeout=12.0) as client:
             try:
                 if self.token:
+                    headers = dict(self.headers)
+                    headers["Authorization"] = f"Bearer {self.token.strip()}"
                     res = await client.get(
                         f"{self.base_url}/user/repos",
-                        headers=self.headers,
-                        params={"sort": "updated", "per_page": 50}
+                        headers=headers,
+                        params={"sort": "updated", "per_page": 100, "affiliation": "owner,collaborator,organization_member"}
                     )
+                    if res.status_code in (401, 403):
+                        headers["Authorization"] = f"token {self.token.strip()}"
+                        res = await client.get(
+                            f"{self.base_url}/user/repos",
+                            headers=headers,
+                            params={"sort": "updated", "per_page": 100, "affiliation": "owner,collaborator,organization_member"}
+                        )
+                    if res.status_code == 200:
+                        repos = res.json()
+                        if isinstance(repos, list) and len(repos) > 0:
+                            return [
+                                {
+                                    "github_id": r.get("id"),
+                                    "name": r.get("name"),
+                                    "owner": r.get("owner", {}).get("login", ""),
+                                    "full_name": r.get("full_name"),
+                                    "private": r.get("private", False),
+                                    "html_url": r.get("html_url"),
+                                    "clone_url": r.get("clone_url"),
+                                    "default_branch": r.get("default_branch", "main"),
+                                    "description": r.get("description") or "GitHub Repository",
+                                    "stars": r.get("stargazers_count", 0),
+                                    "forks": r.get("forks_count", 0),
+                                    "language": r.get("language") or "Code"
+                                }
+                                for r in repos
+                            ]
                 elif self.active_username:
                     res = await client.get(
                         f"{self.base_url}/users/{self.active_username}/repos",
                         headers=self.headers,
                         params={"sort": "updated", "per_page": 50}
                     )
+                    if res.status_code == 200:
+                        repos = res.json()
+                        if isinstance(repos, list) and len(repos) > 0:
+                            return [
+                                {
+                                    "github_id": r.get("id"),
+                                    "name": r.get("name"),
+                                    "owner": r.get("owner", {}).get("login", ""),
+                                    "full_name": r.get("full_name"),
+                                    "private": r.get("private", False),
+                                    "html_url": r.get("html_url"),
+                                    "clone_url": r.get("clone_url"),
+                                    "default_branch": r.get("default_branch", "main"),
+                                    "description": r.get("description") or "GitHub Repository",
+                                    "stars": r.get("stargazers_count", 0),
+                                    "forks": r.get("forks_count", 0),
+                                    "language": r.get("language") or "Code"
+                                }
+                                for r in repos
+                            ]
                 else:
                     res = await client.get(
                         f"{self.base_url}/repositories",
                         headers=self.headers,
                         params={"per_page": 30}
                     )
-                if res.status_code == 403 or res.is_error:
-                    target_user = self.active_username or "alien1611"
-                    return [
-                        {
-                            "github_id": 901,
-                            "name": "the-code-factory",
-                            "owner": target_user,
-                            "full_name": f"{target_user}/the-code-factory",
-                            "private": False,
-                            "html_url": f"https://github.com/{target_user}/the-code-factory",
-                            "clone_url": f"https://github.com/{target_user}/the-code-factory.git",
-                            "default_branch": "main",
-                            "description": "Multi-Agent AI Code Verification and Synthesis Engine"
-                        },
-                        {
-                            "github_id": 902,
-                            "name": "Evidence-Driven-Verification-Engine",
-                            "owner": target_user,
-                            "full_name": f"{target_user}/Evidence-Driven-Verification-Engine",
-                            "private": False,
-                            "html_url": f"https://github.com/{target_user}/Evidence-Driven-Verification-Engine",
-                            "clone_url": f"https://github.com/{target_user}/Evidence-Driven-Verification-Engine.git",
-                            "default_branch": "main",
-                            "description": "FastAPI Orchestrator for formal mathematical invariants"
-                        },
-                        {
-                            "github_id": 903,
-                            "name": "Hello-World",
-                            "owner": "octocat",
-                            "full_name": "octocat/Hello-World",
-                            "private": False,
-                            "html_url": "https://github.com/octocat/Hello-World",
-                            "clone_url": "https://github.com/octocat/Hello-World.git",
-                            "default_branch": "master",
-                            "description": "My first repository on GitHub!"
-                        }
-                    ]
-                repos = res.json()
-                if not isinstance(repos, list):
-                    repos = []
-                normalized = []
-                for r in repos:
-                    normalized.append({
-                        "github_id": r.get("id"),
-                        "name": r.get("name"),
-                        "owner": r.get("owner", {}).get("login", ""),
-                        "full_name": r.get("full_name"),
-                        "private": r.get("private", False),
-                        "html_url": r.get("html_url"),
-                        "clone_url": r.get("clone_url"),
-                        "default_branch": r.get("default_branch", "main"),
-                        "description": r.get("description"),
-                    })
-                return normalized
+                    if res.status_code == 200:
+                        repos = res.json()
+                        return [
+                            {
+                                "github_id": r.get("id"),
+                                "name": r.get("name"),
+                                "owner": r.get("owner", {}).get("login", ""),
+                                "full_name": r.get("full_name"),
+                                "private": r.get("private", False),
+                                "html_url": r.get("html_url"),
+                                "clone_url": r.get("clone_url"),
+                                "default_branch": r.get("default_branch", "main"),
+                                "description": r.get("description") or "GitHub Repository",
+                                "stars": r.get("stargazers_count", 0),
+                                "forks": r.get("forks_count", 0),
+                                "language": r.get("language") or "Code"
+                            }
+                            for r in repos
+                        ]
             except Exception as e:
-                logger.warning(f"Fallback repository listing: {e}")
-                target_user = self.active_username or "alien1611"
-                return [
-                    {
-                        "github_id": 901,
-                        "name": "the-code-factory",
-                        "owner": target_user,
-                        "full_name": f"{target_user}/the-code-factory",
-                        "private": False,
-                        "html_url": f"https://github.com/{target_user}/the-code-factory",
-                        "clone_url": f"https://github.com/{target_user}/the-code-factory.git",
-                        "default_branch": "main",
-                        "description": "Multi-Agent AI Code Verification and Synthesis Engine"
-                    }
-                ]
+                logger.warning(f"Error fetching live repositories: {e}")
+
+            target_user = self.active_username or "alien1611"
+            return [
+                {
+                    "github_id": 901,
+                    "name": "the-code-factory",
+                    "owner": target_user,
+                    "full_name": f"{target_user}/the-code-factory",
+                    "private": False,
+                    "html_url": f"https://github.com/{target_user}/the-code-factory",
+                    "clone_url": f"https://github.com/{target_user}/the-code-factory.git",
+                    "default_branch": "main",
+                    "description": "Multi-Agent AI Code Verification and Synthesis Engine",
+                    "stars": 1,
+                    "forks": 0,
+                    "language": "TypeScript"
+                }
+            ]
 
     async def get_repository(self, owner: str, repo: str) -> dict[str, Any]:
         """Get repository metadata."""

@@ -202,13 +202,18 @@ async def connect_github_token(req: ConnectTokenRequest):
 
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"token {clean_token}",
-        "User-Agent": "Evidence-Driven-Verification-Engine"
+        "Authorization": f"Bearer {clean_token}",
+        "User-Agent": "Evidence-Driven-Verification-Engine",
+        "X-GitHub-Api-Version": "2022-11-28"
     }
 
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    async with httpx.AsyncClient(timeout=12.0) as client:
         try:
             res = await client.get("https://api.github.com/user", headers=headers)
+            if res.status_code == 401 or res.status_code == 403:
+                # Try classic token format
+                headers["Authorization"] = f"token {clean_token}"
+                res = await client.get("https://api.github.com/user", headers=headers)
         except Exception as e:
             logger.error(f"Failed to connect to GitHub API: {e}")
             raise HTTPException(
@@ -231,7 +236,7 @@ async def connect_github_token(req: ConnectTokenRequest):
         # Set active token in backend service
         github_service.token = clean_token
         github_service.active_username = data.get("login")
-        github_service.headers["Authorization"] = f"token {clean_token}"
+        github_service.headers["Authorization"] = headers["Authorization"]
 
         logger.info(f"Successfully authenticated GitHub user: {data.get('login')}")
 
@@ -242,7 +247,8 @@ async def connect_github_token(req: ConnectTokenRequest):
             avatar_url=data.get("avatar_url"),
             html_url=data.get("html_url"),
             public_repos=data.get("public_repos", 0),
-            total_private_repos=data.get("total_private_repos", 0)
+            total_private_repos=data.get("total_private_repos", 0),
+            token=clean_token
         )
 
 
