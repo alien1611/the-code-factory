@@ -54,12 +54,14 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
     loadInitialRepos();
   }, []);
 
+  const selectedRepo = repos.find(r => r.id === selectedRepoId);
+
   useEffect(() => {
     async function loadPRs() {
-      if (!selectedRepoId) return;
+      if (!selectedRepo) return;
       setIsLoadingPRs(true);
       try {
-        const prList = await getPullRequests(selectedRepoId);
+        const prList = await getPullRequests(selectedRepo.id || selectedRepo.full_name);
         setPullRequests(prList);
       } catch (err) {
         console.error('Failed to load PRs:', err);
@@ -68,9 +70,7 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
       }
     }
     loadPRs();
-  }, [selectedRepoId]);
-
-  const selectedRepo = repos.find(r => r.id === selectedRepoId);
+  }, [selectedRepoId, selectedRepo?.id, selectedRepo?.full_name]);
 
   const filteredRepos = repos.filter(r => 
     r.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -82,10 +82,10 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
     setIsStartingJob(pr.number);
 
     try {
-      const response = await createVerifyJob(
-        { repo_full_name: selectedRepo.full_name, pr_number: pr.number },
-        pr.scenario_type
-      );
+      const response = await createVerifyJob({
+        repo_full_name: selectedRepo.full_name,
+        pr_number: pr.number
+      });
       onStartVerify(response.job_id, selectedRepo.full_name, pr.number);
       navigate(`/verify/${response.job_id}`);
     } catch (err) {
