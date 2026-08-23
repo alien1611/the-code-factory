@@ -1,0 +1,660 @@
+{
+  "metadata": {
+    "title": "AI Code Verification SaaS - Evaluation Dashboard",
+    "benchmarkName": "AI Code Verification SaaS Evaluation Dataset",
+    "generatedAt": "2026-08-22T16:03:20.426343+00:00",
+    "schemaVersion": "1.0.0"
+  },
+  "summary": {
+    "totalCases": 17,
+    "passed": 7,
+    "failed": 10,
+    "truePositives": 3,
+    "falsePositives": 0,
+    "trueNegatives": 7,
+    "falseNegatives": 7,
+    "precision": 100.0,
+    "recall": 30.0,
+    "f1Score": 46.15,
+    "accuracy": 58.82
+  },
+  "performance": {
+    "averageExecutionTimeMs": 3533.62,
+    "medianExecutionTimeMs": 0.0,
+    "minimumExecutionTimeMs": 0.0,
+    "maximumExecutionTimeMs": 60066.36,
+    "totalExecutionTimeMs": 60071.52
+  },
+  "perToolMetrics": [
+    {
+      "id": "ruff",
+      "name": "Ruff Linter",
+      "detectedCount": 0,
+      "expectedCount": 3,
+      "coveragePct": 0.0
+    },
+    {
+      "id": "semgrep",
+      "name": "Semgrep AST Rules",
+      "detectedCount": 0,
+      "expectedCount": 6,
+      "coveragePct": 0.0
+    },
+    {
+      "id": "dependency_scanner",
+      "name": "Dependency Scanner",
+      "detectedCount": 0,
+      "expectedCount": 1,
+      "coveragePct": 0.0
+    },
+    {
+      "id": "domain_rules",
+      "name": "Domain Rules (RFID)",
+      "detectedCount": 3,
+      "expectedCount": 3,
+      "coveragePct": 100.0
+    },
+    {
+      "id": "generated_tests",
+      "name": "Generated Property Tests",
+      "detectedCount": 0,
+      "expectedCount": 3,
+      "coveragePct": 0.0
+    },
+    {
+      "id": "ai_verification",
+      "name": "AI / LLM Verification",
+      "detectedCount": 0,
+      "expectedCount": 9,
+      "coveragePct": 0.0
+    }
+  ],
+  "perCategoryMetrics": [
+    {
+      "category": "security",
+      "displayName": "Security Vulnerabilities",
+      "total": 2,
+      "passCount": 0,
+      "failCount": 2,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 0,
+      "falseNegatives": 2,
+      "accuracy": 0.0,
+      "recall": 0.0
+    },
+    {
+      "category": "logic",
+      "displayName": "Business Logic",
+      "total": 2,
+      "passCount": 1,
+      "failCount": 1,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 1,
+      "falseNegatives": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    {
+      "category": "authentication",
+      "displayName": "Authentication",
+      "total": 2,
+      "passCount": 1,
+      "failCount": 1,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 1,
+      "falseNegatives": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    {
+      "category": "authorization",
+      "displayName": "Authorization (IDOR)",
+      "total": 2,
+      "passCount": 1,
+      "failCount": 1,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 1,
+      "falseNegatives": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    {
+      "category": "rfid",
+      "displayName": "RFID / IoT Hardware",
+      "total": 5,
+      "passCount": 2,
+      "failCount": 3,
+      "truePositives": 3,
+      "falsePositives": 0,
+      "trueNegatives": 2,
+      "falseNegatives": 0,
+      "accuracy": 100.0,
+      "recall": 100.0
+    },
+    {
+      "category": "dependency",
+      "displayName": "Dependency Security",
+      "total": 2,
+      "passCount": 1,
+      "failCount": 1,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 1,
+      "falseNegatives": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    {
+      "category": "input_validation",
+      "displayName": "Input Validation",
+      "total": 2,
+      "passCount": 1,
+      "failCount": 1,
+      "truePositives": 0,
+      "falsePositives": 0,
+      "trueNegatives": 1,
+      "falseNegatives": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    }
+  ],
+  "detectionMatrix": [
+    {
+      "caseId": "BENCH-AUTH-001",
+      "language": "python",
+      "category": "authentication",
+      "categoryDisplayName": "Authentication",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "PASS",
+      "classification": "FN",
+      "severity": "high",
+      "executionTimeMs": 0.003,
+      "isCorrect": false,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": true,
+        "semgrep": true,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": true
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-AUTH-002",
+      "language": "python",
+      "category": "authentication",
+      "categoryDisplayName": "Authentication",
+      "expectedVerdict": "PASS",
+      "actualVerdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "executionTimeMs": 0.003,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-AUTHZ-003",
+      "language": "python",
+      "category": "authorization",
+      "categoryDisplayName": "Authorization (IDOR)",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "PASS",
+      "classification": "FN",
+      "severity": "critical",
+      "executionTimeMs": 0.002,
+      "isCorrect": false,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": true,
+        "ai_verification": true
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-AUTHZ-004",
+      "language": "python",
+      "category": "authorization",
+      "categoryDisplayName": "Authorization (IDOR)",
+      "expectedVerdict": "PASS",
+      "actualVerdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "executionTimeMs": 0.012,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-INP-005",
+      "language": "python",
+      "category": "input_validation",
+      "categoryDisplayName": "Input Validation",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "PASS",
+      "classification": "FN",
+      "severity": "critical",
+      "executionTimeMs": 0.001,
+      "isCorrect": false,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": true,
+        "semgrep": true,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": true
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-INP-006",
+      "language": "python",
+      "category": "input_validation",
+      "categoryDisplayName": "Input Validation",
+      "expectedVerdict": "PASS",
+      "actualVerdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "executionTimeMs": 0.003,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-SEC-007",
+      "language": "javascript",
+      "category": "security",
+      "categoryDisplayName": "Security Vulnerabilities",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "PASS",
+      "classification": "FN",
+      "severity": "critical",
+      "executionTimeMs": 0.001,
+      "isCorrect": false,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": true,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": true
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-SEC-008",
+      "language": "python",
+      "category": "security",
+      "categoryDisplayName": "Security Vulnerabilities",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "PASS",
+      "classification": "FN",
+      "severity": "critical",
+      "executionTimeMs": 0.001,
+      "isCorrect": false,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": true,
+        "semgrep": true,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": true
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-LOGIC-009",
+      "language": "python",
+      "category": "logic",
+      "categoryDisplayName": "Business Logic",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "PASS",
+      "classification": "FN",
+      "severity": "high",
+      "executionTimeMs": 0.001,
+      "isCorrect": false,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": true,
+        "ai_verification": true
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-LOGIC-010",
+      "language": "python",
+      "category": "logic",
+      "categoryDisplayName": "Business Logic",
+      "expectedVerdict": "PASS",
+      "actualVerdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "executionTimeMs": 0.001,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-DEP-011",
+      "language": "python",
+      "category": "dependency",
+      "categoryDisplayName": "Dependency Security",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "PASS",
+      "classification": "FN",
+      "severity": "high",
+      "executionTimeMs": 60066.36,
+      "isCorrect": false,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": true,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-DEP-012",
+      "language": "javascript",
+      "category": "dependency",
+      "categoryDisplayName": "Dependency Security",
+      "expectedVerdict": "PASS",
+      "actualVerdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "executionTimeMs": 0.038,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-RFID-013",
+      "language": "cpp",
+      "category": "rfid",
+      "categoryDisplayName": "RFID / IoT Hardware",
+      "expectedVerdict": "PASS",
+      "actualVerdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "executionTimeMs": 2.288,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "findingsCount": 0
+    },
+    {
+      "caseId": "BENCH-RFID-014",
+      "language": "cpp",
+      "category": "rfid",
+      "categoryDisplayName": "RFID / IoT Hardware",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "FAIL",
+      "classification": "TP",
+      "severity": "critical",
+      "executionTimeMs": 0.443,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": true,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": true,
+        "dependency_scanner": false,
+        "domain_rules": true,
+        "generated_tests": false,
+        "ai_verification": true
+      },
+      "findingsCount": 1
+    },
+    {
+      "caseId": "BENCH-RFID-015",
+      "language": "cpp",
+      "category": "rfid",
+      "categoryDisplayName": "RFID / IoT Hardware",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "FAIL",
+      "classification": "TP",
+      "severity": "critical",
+      "executionTimeMs": 1.125,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": true,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": true,
+        "dependency_scanner": false,
+        "domain_rules": true,
+        "generated_tests": false,
+        "ai_verification": true
+      },
+      "findingsCount": 1
+    },
+    {
+      "caseId": "BENCH-RFID-016",
+      "language": "cpp",
+      "category": "rfid",
+      "categoryDisplayName": "RFID / IoT Hardware",
+      "expectedVerdict": "FAIL",
+      "actualVerdict": "FAIL",
+      "classification": "TP",
+      "severity": "critical",
+      "executionTimeMs": 0.638,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": true,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": true,
+        "generated_tests": true,
+        "ai_verification": true
+      },
+      "findingsCount": 1
+    },
+    {
+      "caseId": "BENCH-RFID-017",
+      "language": "cpp",
+      "category": "rfid",
+      "categoryDisplayName": "RFID / IoT Hardware",
+      "expectedVerdict": "PASS",
+      "actualVerdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "executionTimeMs": 0.603,
+      "isCorrect": true,
+      "detectedBy": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "expectedFrom": {
+        "ruff": false,
+        "semgrep": false,
+        "dependency_scanner": false,
+        "domain_rules": false,
+        "generated_tests": false,
+        "ai_verification": false
+      },
+      "findingsCount": 0
+    }
+  ]
+}

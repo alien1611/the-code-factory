@@ -1,0 +1,497 @@
+{
+  "benchmark_name": "AI Code Verification SaaS Evaluation Dataset",
+  "timestamp": "2026-08-22T16:03:20.426343+00:00",
+  "metrics": {
+    "total_cases": 17,
+    "passed_cases": 7,
+    "failed_cases": 10,
+    "true_positives": 3,
+    "false_positives": 0,
+    "true_negatives": 7,
+    "false_negatives": 7,
+    "accuracy": 58.82,
+    "precision": 100.0,
+    "recall": 30.0,
+    "f1_score": 46.15
+  },
+  "timing": {
+    "total_time_ms": 60071.523,
+    "avg_time_ms": 3533.619,
+    "median_time_ms": 0.003,
+    "min_time_ms": 0.001,
+    "max_time_ms": 60066.36
+  },
+  "tool_performance": {
+    "static_analysis": {
+      "tool_name": "static_analysis",
+      "detected_count": 0,
+      "expected_count": 3,
+      "detection_rate_pct": 0.0
+    },
+    "llm_reasoning": {
+      "tool_name": "llm_reasoning",
+      "detected_count": 0,
+      "expected_count": 9,
+      "detection_rate_pct": 0.0
+    },
+    "semgrep": {
+      "tool_name": "semgrep",
+      "detected_count": 0,
+      "expected_count": 6,
+      "detection_rate_pct": 0.0
+    },
+    "generated_tests": {
+      "tool_name": "generated_tests",
+      "detected_count": 0,
+      "expected_count": 3,
+      "detection_rate_pct": 0.0
+    },
+    "dependency_scanner": {
+      "tool_name": "dependency_scanner",
+      "detected_count": 0,
+      "expected_count": 1,
+      "detection_rate_pct": 0.0
+    },
+    "rfid_domain_rule": {
+      "tool_name": "rfid_domain_rule",
+      "detected_count": 3,
+      "expected_count": 3,
+      "detection_rate_pct": 100.0
+    }
+  },
+  "category_performance": {
+    "authentication": {
+      "total": 2,
+      "pass_count": 1,
+      "fail_count": 1,
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    "authorization": {
+      "total": 2,
+      "pass_count": 1,
+      "fail_count": 1,
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    "input_validation": {
+      "total": 2,
+      "pass_count": 1,
+      "fail_count": 1,
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    "security": {
+      "total": 2,
+      "pass_count": 0,
+      "fail_count": 2,
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 2,
+      "accuracy": 0.0,
+      "recall": 0.0
+    },
+    "logic_errors": {
+      "total": 2,
+      "pass_count": 1,
+      "fail_count": 1,
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    "dependency_vulnerabilities": {
+      "total": 2,
+      "pass_count": 1,
+      "fail_count": 1,
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 1,
+      "accuracy": 50.0,
+      "recall": 0.0
+    },
+    "rfid_iot_authentication": {
+      "total": 5,
+      "pass_count": 2,
+      "fail_count": 3,
+      "tp": 3,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "accuracy": 100.0,
+      "recall": 100.0
+    }
+  },
+  "severity_performance": {
+    "high": {
+      "total": 3,
+      "detected": 0,
+      "expected_flawed": 3,
+      "detection_rate_pct": 0.0
+    },
+    "info": {
+      "total": 7,
+      "detected": 0,
+      "expected_flawed": 0,
+      "detection_rate_pct": 100.0
+    },
+    "critical": {
+      "total": 7,
+      "detected": 3,
+      "expected_flawed": 7,
+      "detection_rate_pct": 42.86
+    }
+  },
+  "case_results": [
+    {
+      "case_id": "BENCH-AUTH-001",
+      "language": "python",
+      "bug_category": "authentication",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "PASS",
+      "classification": "FN",
+      "severity": "high",
+      "execution_time_ms": 0.003,
+      "detecting_tools": [],
+      "expected_tools": [
+        "semgrep",
+        "llm_reasoning",
+        "static_analysis"
+      ],
+      "findings": [],
+      "is_correct": false
+    },
+    {
+      "case_id": "BENCH-AUTH-002",
+      "language": "python",
+      "bug_category": "authentication",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "execution_time_ms": 0.003,
+      "detecting_tools": [],
+      "expected_tools": [],
+      "findings": [],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-AUTHZ-003",
+      "language": "python",
+      "bug_category": "authorization",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "PASS",
+      "classification": "FN",
+      "severity": "critical",
+      "execution_time_ms": 0.002,
+      "detecting_tools": [],
+      "expected_tools": [
+        "llm_reasoning",
+        "generated_tests"
+      ],
+      "findings": [],
+      "is_correct": false
+    },
+    {
+      "case_id": "BENCH-AUTHZ-004",
+      "language": "python",
+      "bug_category": "authorization",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "execution_time_ms": 0.012,
+      "detecting_tools": [],
+      "expected_tools": [],
+      "findings": [],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-INP-005",
+      "language": "python",
+      "bug_category": "input_validation",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "PASS",
+      "classification": "FN",
+      "severity": "critical",
+      "execution_time_ms": 0.001,
+      "detecting_tools": [],
+      "expected_tools": [
+        "semgrep",
+        "static_analysis",
+        "llm_reasoning"
+      ],
+      "findings": [],
+      "is_correct": false
+    },
+    {
+      "case_id": "BENCH-INP-006",
+      "language": "python",
+      "bug_category": "input_validation",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "execution_time_ms": 0.003,
+      "detecting_tools": [],
+      "expected_tools": [],
+      "findings": [],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-SEC-007",
+      "language": "javascript",
+      "bug_category": "security",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "PASS",
+      "classification": "FN",
+      "severity": "critical",
+      "execution_time_ms": 0.001,
+      "detecting_tools": [],
+      "expected_tools": [
+        "semgrep",
+        "llm_reasoning"
+      ],
+      "findings": [],
+      "is_correct": false
+    },
+    {
+      "case_id": "BENCH-SEC-008",
+      "language": "python",
+      "bug_category": "security",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "PASS",
+      "classification": "FN",
+      "severity": "critical",
+      "execution_time_ms": 0.001,
+      "detecting_tools": [],
+      "expected_tools": [
+        "semgrep",
+        "static_analysis",
+        "llm_reasoning"
+      ],
+      "findings": [],
+      "is_correct": false
+    },
+    {
+      "case_id": "BENCH-LOGIC-009",
+      "language": "python",
+      "bug_category": "logic_errors",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "PASS",
+      "classification": "FN",
+      "severity": "high",
+      "execution_time_ms": 0.001,
+      "detecting_tools": [],
+      "expected_tools": [
+        "generated_tests",
+        "llm_reasoning"
+      ],
+      "findings": [],
+      "is_correct": false
+    },
+    {
+      "case_id": "BENCH-LOGIC-010",
+      "language": "python",
+      "bug_category": "logic_errors",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "execution_time_ms": 0.001,
+      "detecting_tools": [],
+      "expected_tools": [],
+      "findings": [],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-DEP-011",
+      "language": "python",
+      "bug_category": "dependency_vulnerabilities",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "PASS",
+      "classification": "FN",
+      "severity": "high",
+      "execution_time_ms": 60066.36,
+      "detecting_tools": [],
+      "expected_tools": [
+        "dependency_scanner"
+      ],
+      "findings": [],
+      "is_correct": false
+    },
+    {
+      "case_id": "BENCH-DEP-012",
+      "language": "javascript",
+      "bug_category": "dependency_vulnerabilities",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "execution_time_ms": 0.038,
+      "detecting_tools": [],
+      "expected_tools": [],
+      "findings": [],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-RFID-013",
+      "language": "cpp",
+      "bug_category": "rfid_iot_authentication",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "execution_time_ms": 2.288,
+      "detecting_tools": [],
+      "expected_tools": [],
+      "findings": [],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-RFID-014",
+      "language": "cpp",
+      "bug_category": "rfid_iot_authentication",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "FAIL",
+      "classification": "TP",
+      "severity": "critical",
+      "execution_time_ms": 0.443,
+      "detecting_tools": [
+        "rfid_domain_rule"
+      ],
+      "expected_tools": [
+        "rfid_domain_rule",
+        "semgrep",
+        "llm_reasoning"
+      ],
+      "findings": [
+        {
+          "tool": "rfid-domain-rule",
+          "category": "security",
+          "severity": "critical",
+          "file": "BENCH-RFID-014.ino",
+          "start_line": 7,
+          "end_line": 7,
+          "rule_id": "RFID-001-UNAUTHORIZED-UNLOCK",
+          "message": "Critical RFID authentication flaw: Door unlock operation is triggered immediately upon card detection without reading or validating the card UID against an authorized whitelist. Any physical RFID tag will grant unauthorized entry.",
+          "evidence": "digitalWrite(7, HIGH)",
+          "confidence": 1.0,
+          "metadata": {
+            "rule_name": "Unauthorized RFID Unlock",
+            "detection_step": "Present",
+            "uid_read_step": "Missing",
+            "authorization_step": "Missing",
+            "unlock_step": "Present"
+          }
+        }
+      ],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-RFID-015",
+      "language": "cpp",
+      "bug_category": "rfid_iot_authentication",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "FAIL",
+      "classification": "TP",
+      "severity": "critical",
+      "execution_time_ms": 1.125,
+      "detecting_tools": [
+        "rfid_domain_rule"
+      ],
+      "expected_tools": [
+        "rfid_domain_rule",
+        "semgrep",
+        "llm_reasoning"
+      ],
+      "findings": [
+        {
+          "tool": "rfid-domain-rule",
+          "category": "security",
+          "severity": "critical",
+          "file": "BENCH-RFID-015.ino",
+          "start_line": 11,
+          "end_line": 11,
+          "rule_id": "RFID-002-UNGUARDED-UNLOCK",
+          "message": "Unguarded RFID unlock operation: The unlock routine is executed unconditionally outside an authorization decision branch.",
+          "evidence": "unlockDoor()",
+          "confidence": 1.0,
+          "metadata": {
+            "rule_name": "Unguarded RFID Unlock",
+            "authorization_step": "Bypassed / Not Guarding Unlock",
+            "unlock_step": "Present"
+          }
+        }
+      ],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-RFID-016",
+      "language": "cpp",
+      "bug_category": "rfid_iot_authentication",
+      "expected_verdict": "FAIL",
+      "actual_verdict": "FAIL",
+      "classification": "TP",
+      "severity": "critical",
+      "execution_time_ms": 0.638,
+      "detecting_tools": [
+        "rfid_domain_rule"
+      ],
+      "expected_tools": [
+        "generated_tests",
+        "llm_reasoning",
+        "rfid_domain_rule"
+      ],
+      "findings": [
+        {
+          "tool": "rfid-domain-rule",
+          "category": "security",
+          "severity": "critical",
+          "file": "BENCH-RFID-016.ino",
+          "start_line": 12,
+          "end_line": 12,
+          "rule_id": "RFID-004-INVERTED-AUTHORIZATION",
+          "message": "Critical RFID authorization bypass: Inverted authorization condition detected. The door unlock operation is triggered when the UID authorization check evaluates to false.",
+          "evidence": "unlockDoor()",
+          "confidence": 1.0,
+          "metadata": {
+            "rule_name": "Inverted RFID Authorization Logic",
+            "flaw_type": "Negated authorization check (!isMatch / !isAuthorized)"
+          }
+        }
+      ],
+      "is_correct": true
+    },
+    {
+      "case_id": "BENCH-RFID-017",
+      "language": "cpp",
+      "bug_category": "rfid_iot_authentication",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "classification": "TN",
+      "severity": "info",
+      "execution_time_ms": 0.603,
+      "detecting_tools": [],
+      "expected_tools": [],
+      "findings": [],
+      "is_correct": true
+    }
+  ]
+}
