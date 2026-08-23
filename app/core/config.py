@@ -20,8 +20,11 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite:///./evidence_verifier.db"
 
-    # GitHub
+    # GitHub & OAuth
     GITHUB_TOKEN: str | None = None
+    GITHUB_CLIENT_ID: str | None = None
+    GITHUB_CLIENT_SECRET: str | None = None
+    GITHUB_REDIRECT_URI: str = "http://localhost:5173/oauth/callback"
     GITHUB_API_URL: str = "https://api.github.com"
     GITHUB_WEBHOOK_SECRET: str | None = None
 

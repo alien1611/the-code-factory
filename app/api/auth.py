@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 import httpx
 from fastapi import APIRouter, HTTPException, Header, status
 
+from app.core.config import settings
 from app.core.logging import logger
 from app.services.github_service import github_service
 
@@ -21,6 +22,96 @@ class UserProfileResponse(BaseModel):
     html_url: str | None = None
     public_repos: int = 0
     total_private_repos: int = 0
+    token: str | None = None
+
+
+class OAuthCallbackRequest(BaseModel):
+    code: str = Field(..., description="Temporary GitHub OAuth authorization code")
+
+
+class OAuthUrlResponse(BaseModel):
+    url: str
+    client_id_configured: bool
+
+
+@router.get("/oauth/url", response_model=OAuthUrlResponse)
+def get_github_oauth_url():
+    """
+    Get the official GitHub OAuth authorization redirect URL.
+    """
+    client_id = settings.GITHUB_CLIENT_ID or ""
+    scope = "repo,read:org"
+    redirect_uri = settings.GITHUB_REDIRECT_URI
+    if not client_id:
+        return OAuthUrlResponse(
+            url=f"https://github.com/login/oauth/authorize?client_id=&scope={scope}&redirect_uri={redirect_uri}",
+            client_id_configured=False
+        )
+    return OAuthUrlResponse(
+        url=f"https://github.com/login/oauth/authorize?client_id={client_id}&scope={scope}&redirect_uri={redirect_uri}",
+        client_id_configured=True
+    )
+
+
+@router.post("/oauth/callback", response_model=UserProfileResponse)
+async def handle_github_oauth_callback(req: OAuthCallbackRequest):
+    """
+    Exchange temporary GitHub OAuth code for an active access token and fetch user profile.
+    """
+    if not settings.GITHUB_CLIENT_ID or not settings.GITHUB_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="GitHub OAuth Client ID or Client Secret is not configured in backend environment."
+        )
+
+    token_url = "https://github.com/login/oauth/access_token"
+    payload = {
+        "client_id": settings.GITHUB_CLIENT_ID,
+        "client_secret": settings.GITHUB_CLIENT_SECRET,
+        "code": req.code,
+        "redirect_uri": settings.GITHUB_REDIRECT_URI
+    }
+    headers = {
+        "Accept": "application/json",
+        "User-Agent": "Evidence-Driven-Verification-Engine"
+    }
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        res = await client.post(token_url, json=payload, headers=headers)
+        if res.is_error:
+            raise HTTPException(
+                status_code=res.status_code,
+                detail=f"GitHub OAuth token exchange failed: {res.text}"
+            )
+        data = res.json()
+        access_token = data.get("access_token")
+        if not access_token:
+            error_desc = data.get("error_description", data.get("error", "OAuth token exchange returned empty token"))
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_desc
+            )
+
+        # Set token in github_service and retrieve user profile
+        github_service.token = access_token
+        github_service.headers["Authorization"] = f"token {access_token}"
+
+        user_res = await client.get("https://api.github.com/user", headers=github_service.headers)
+        if user_res.status_code == 200:
+            user_data = user_res.json()
+            github_service.active_username = user_data.get("login")
+            return UserProfileResponse(
+                authenticated=True,
+                username=user_data.get("login"),
+                name=user_data.get("name") or user_data.get("login"),
+                avatar_url=user_data.get("avatar_url"),
+                html_url=user_data.get("html_url"),
+                public_repos=user_data.get("public_repos", 0),
+                total_private_repos=user_data.get("total_private_repos", 0),
+                token=access_token
+            )
+
+        return UserProfileResponse(authenticated=True, username="github-user", token=access_token)
 
 
 class ConnectUserRequest(BaseModel):
