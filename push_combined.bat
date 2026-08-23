@@ -3,7 +3,7 @@ echo ===================================================
 echo   Deploying The Code Factory (Combined Branch)
 echo ===================================================
 echo.
-git push -u origin combined
+git push -u origin combined --force
 echo.
 echo ===================================================
 echo   Push Complete! Check your GitHub Actions tab:
