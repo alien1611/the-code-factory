@@ -36,7 +36,7 @@ export async function getRepos(): Promise<Repo[]> {
           language: r.language || 'TypeScript',
           default_branch: r.default_branch || 'main'
         }));
-        return [...MOCK_REPOS, ...liveRepos];
+        return [...liveRepos, ...MOCK_REPOS];
       }
     }
   } catch (err) {
