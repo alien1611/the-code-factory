@@ -215,7 +215,26 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
         {/* Left: Repositories (4 cols) */}
         <div className="lg:col-span-5 space-y-4">
           <div className="flex items-center justify-between text-xs font-mono text-[#8E96A0]">
-            <span>CONNECTED REPOSITORIES ({filteredRepos.length})</span>
+            <div className="flex items-center gap-2">
+              <span>CONNECTED REPOSITORIES ({filteredRepos.length})</span>
+              <button 
+                onClick={async () => {
+                  setIsLoadingRepos(true);
+                  try {
+                    const list = await getRepos();
+                    setRepos(list);
+                    if (list.length > 0) setSelectedRepoId(list[0].id);
+                  } finally {
+                    setIsLoadingRepos(false);
+                  }
+                }}
+                disabled={isLoadingRepos}
+                title="Refresh Repositories from GitHub"
+                className="p-1 hover:text-[#37E2C4] transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingRepos ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
             <Link to="/connect" className="text-[#37E2C4] hover:underline flex items-center gap-1">
               <span>@{activeUsername}</span>
             </Link>
@@ -223,8 +242,9 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
 
           <div className="space-y-3" data-testid="repo-list">
             {isLoadingRepos ? (
-              <div className="p-8 text-center text-xs font-mono text-[#8E96A0] animate-pulse">
-                Loading repositories from GitHub...
+              <div className="p-8 text-center text-xs font-mono text-[#8E96A0] animate-pulse flex flex-col items-center gap-2">
+                <RefreshCw className="w-5 h-5 animate-spin text-[#37E2C4]" />
+                <span>Loading repositories from GitHub...</span>
               </div>
             ) : filteredRepos.length === 0 ? (
               <div className="p-8 text-center text-xs font-mono text-[#8E96A0] border border-[#232A35] rounded-md">
@@ -248,11 +268,22 @@ export const RepoSelectionScreen: React.FC<RepoSelectionScreenProps> = ({ onStar
                       <h3 className={`font-mono text-sm font-bold ${isSelected ? 'text-[#F5A623]' : 'text-[#F2F1ED]'}`}>
                         {repo.full_name}
                       </h3>
-                      {repo.language && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0B0D10] text-[#8E96A0] border border-[#232A35]">
-                          {repo.language}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {repo.private ? (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#FF5C5C]/10 text-[#FF5C5C] border border-[#FF5C5C]/30">
+                            PRIVATE
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#37E2C4]/10 text-[#37E2C4] border border-[#37E2C4]/30">
+                            PUBLIC
+                          </span>
+                        )}
+                        {repo.language && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0B0D10] text-[#8E96A0] border border-[#232A35]">
+                            {repo.language}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-xs text-[#8E96A0] line-clamp-2 leading-relaxed mb-3">

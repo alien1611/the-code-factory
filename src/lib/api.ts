@@ -34,7 +34,7 @@ export async function getRepos(): Promise<Repo[]> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/repositories`, { 
       headers: getAuthHeaders(),
-      signal: AbortSignal.timeout(3000) 
+      signal: AbortSignal.timeout(15000) 
     });
     if (res.ok) {
       const data = await res.json();
@@ -42,38 +42,20 @@ export async function getRepos(): Promise<Repo[]> {
         return data.map((r: any, idx: number) => ({
           id: `repo-${r.github_id || idx + 1}`,
           full_name: r.full_name || `${r.owner}/${r.name}`,
-          description: r.description || 'Live GitHub Repository',
+          description: r.description || 'GitHub Repository',
           stars: r.stars || 0,
           forks: r.forks || 0,
           language: r.language || 'Python',
-          default_branch: r.default_branch || 'main'
+          default_branch: r.default_branch || 'main',
+          private: r.private
         }));
       }
     }
   } catch (err) {
-    // Backend offline / network fallback
+    console.warn('API getRepos network/timeout error:', err);
   }
 
-  return [
-    {
-      id: 'repo-1',
-      full_name: 'alien1611/the-code-factory',
-      description: 'Multi-Agent AI Code Verification and Synthesis Engine',
-      stars: 1,
-      forks: 0,
-      language: 'TypeScript',
-      default_branch: 'main'
-    },
-    {
-      id: 'repo-2',
-      full_name: 'alien1611/Evidence-Driven-Verification-Engine',
-      description: 'FastAPI Orchestrator for formal mathematical invariants',
-      stars: 0,
-      forks: 0,
-      language: 'Python',
-      default_branch: 'main'
-    }
-  ];
+  return [];
 }
 
 /**

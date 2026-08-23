@@ -8,6 +8,7 @@ export interface Repo {
   forks?: number;
   language?: string;
   default_branch?: string;
+  private?: boolean;
 }
 
 export interface PullRequest {
