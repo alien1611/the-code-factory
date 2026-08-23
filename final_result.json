@@ -1,0 +1,17 @@
+{
+  "gemini_verdict": "PASS",
+  "tests_run": 2,
+  "tests_passed": 2,
+  "tests_failed": 0,
+  "final_verdict": "PASS",
+  "evidence": [
+    {
+      "name": "tests/generated/test_authorized_access_allowed.py::test_authorized_access_allowed",
+      "outcome": "passed"
+    },
+    {
+      "name": "tests/generated/test_unauthorized_access_denied.py::test_unauthorized_access_denied",
+      "outcome": "passed"
+    }
+  ]
+}
