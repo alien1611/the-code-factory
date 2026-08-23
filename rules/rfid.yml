@@ -1,0 +1,206 @@
+rules:
+  # ==============================================================================
+  # Rule 1: Card detection directly unlocks door without reading UID or authorization
+  # ==============================================================================
+  - id: rfid-detection-direct-unlock
+    languages:
+      - cpp
+      - c
+    severity: ERROR
+    message: >-
+      Potential missing RFID authorization check: RFID card presence ($RFID.PICC_IsNewCardPresent()) 
+      triggers an unlock operation directly without reading the card UID or verifying authorization against a whitelist.
+      Any physical RFID tag or card will grant unauthorized access.
+    metadata:
+      rule_id: "RFID-001"
+      category: security
+      cwe: "CWE-285: Improper Authorization"
+      owasp: "A01:2021 - Broken Access Control"
+      technology:
+        - arduino
+        - cpp
+        - mfrc522
+      confidence: MEDIUM
+      description: "Detects immediate actuator or unlock triggering on card presence without UID check."
+      # --------------------------------------------------------------------------
+      # Example of matching code (Vulnerable):
+      #   if (mfrc522.PICC_IsNewCardPresent()) {
+      #       digitalWrite(RELAY_PIN, HIGH);
+      #   }
+      #
+      # Example of non-matching code (Safe):
+      #   if (mfrc522.PICC_IsNewCardPresent()) {
+      #       if (mfrc522.PICC_ReadCardSerial() && isAuthorized(mfrc522.uid)) {
+      #           digitalWrite(RELAY_PIN, HIGH);
+      #       }
+      #   }
+      # --------------------------------------------------------------------------
+    patterns:
+      - pattern-either:
+          - pattern: |
+              if ($RFID.PICC_IsNewCardPresent(...)) {
+                ...
+                digitalWrite($PIN, HIGH);
+                ...
+              }
+          - pattern: |
+              if ($RFID.PICC_IsNewCardPresent(...)) {
+                ...
+                unlockDoor(...);
+                ...
+              }
+          - pattern: |
+              if ($RFID.PICC_IsNewCardPresent(...)) {
+                ...
+                openLock(...);
+                ...
+              }
+          - pattern: |
+              if ($RFID.PICC_IsNewCardPresent(...)) {
+                ...
+                $RELAY.on(...);
+                ...
+              }
+      - pattern-not: |
+          if ($RFID.PICC_IsNewCardPresent(...)) {
+            ...
+            $RFID.PICC_ReadCardSerial(...);
+            ...
+          }
+      - pattern-not: |
+          if ($RFID.PICC_IsNewCardPresent(...)) {
+            ...
+            isAuthorized(...);
+            ...
+          }
+      - pattern-not: |
+          if ($RFID.PICC_IsNewCardPresent(...)) {
+            ...
+            checkAccess(...);
+            ...
+          }
+
+  # ==============================================================================
+  # Rule 2: UID read without apparent comparison/validation before unlock
+  # ==============================================================================
+  - id: rfid-uid-read-without-validation
+    languages:
+      - cpp
+      - c
+    severity: WARNING
+    message: >-
+      Potential missing RFID authorization check: RFID UID is read via $RFID.PICC_ReadCardSerial(), 
+      but an unlock operation occurs without any apparent comparison or validation against an authorized whitelist.
+    metadata:
+      rule_id: "RFID-002"
+      category: security
+      cwe: "CWE-285: Improper Authorization"
+      owasp: "A01:2021 - Broken Access Control"
+      technology:
+        - arduino
+        - cpp
+        - mfrc522
+      confidence: MEDIUM
+      description: "Detects UID reading followed by unlock without whitelist comparison or authorization function."
+      # --------------------------------------------------------------------------
+      # Example of matching code (Vulnerable):
+      #   if (mfrc522.PICC_ReadCardSerial()) {
+      #       unlockDoor();
+      #   }
+      #
+      # Example of non-matching code (Safe):
+      #   if (mfrc522.PICC_ReadCardSerial()) {
+      #       if (memcmp(mfrc522.uid.uidByte, masterCard, 4) == 0) {
+      #           unlockDoor();
+      #       }
+      #   }
+      # --------------------------------------------------------------------------
+    patterns:
+      - pattern-either:
+          - pattern: |
+              if ($RFID.PICC_ReadCardSerial(...)) {
+                ...
+                digitalWrite($PIN, HIGH);
+                ...
+              }
+          - pattern: |
+              if ($RFID.PICC_ReadCardSerial(...)) {
+                ...
+                unlockDoor(...);
+                ...
+              }
+          - pattern: |
+              if ($RFID.PICC_ReadCardSerial(...)) {
+                ...
+                openLock(...);
+                ...
+              }
+      - pattern-not: |
+          if ($RFID.PICC_ReadCardSerial(...)) {
+            ...
+            memcmp(...);
+            ...
+          }
+      - pattern-not: |
+          if ($RFID.PICC_ReadCardSerial(...)) {
+            ...
+            strcmp(...);
+            ...
+          }
+      - pattern-not: |
+          if ($RFID.PICC_ReadCardSerial(...)) {
+            ...
+            if (...) { ... }
+            ...
+          }
+
+  # ==============================================================================
+  # Rule 3: Unlock occurs in combined detection branch without authorization condition
+  # ==============================================================================
+  - id: rfid-unguarded-unlock-in-card-branch
+    languages:
+      - cpp
+      - c
+    severity: ERROR
+    message: >-
+      Potential missing RFID authorization check: Door unlock or relay actuation occurs inside an RFID 
+      detection branch ($RFID.PICC_IsNewCardPresent() && $RFID.PICC_ReadCardSerial()) without an inner authorization conditional check.
+    metadata:
+      rule_id: "RFID-003"
+      category: security
+      cwe: "CWE-285: Improper Authorization"
+      owasp: "A01:2021 - Broken Access Control"
+      technology:
+        - arduino
+        - cpp
+        - mfrc522
+      confidence: MEDIUM
+      description: "Detects combined presence and read branch executing unlock without an inner conditional authorization guard."
+      # --------------------------------------------------------------------------
+      # Example of matching code (Vulnerable):
+      #   if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+      #       digitalWrite(RELAY_PIN, HIGH);
+      #   }
+      #
+      # Example of non-matching code (Safe):
+      #   if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+      #       if (checkUID(mfrc522.uid)) {
+      #           digitalWrite(RELAY_PIN, HIGH);
+      #       }
+      #   }
+      # --------------------------------------------------------------------------
+    patterns:
+      - pattern-inside: |
+          if ($RFID.PICC_IsNewCardPresent(...) && $RFID.PICC_ReadCardSerial(...)) {
+            ...
+          }
+      - pattern-either:
+          - pattern: digitalWrite($PIN, HIGH);
+          - pattern: unlockDoor(...);
+          - pattern: openLock(...);
+          - pattern: releaseLock(...);
+          - pattern: $RELAY.on(...);
+      - pattern-not-inside: |
+          if (...) {
+            ...
+          }

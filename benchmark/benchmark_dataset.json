@@ -1,0 +1,255 @@
+{
+  "benchmark_name": "AI Code Verification SaaS Evaluation Dataset",
+  "version": "1.0.0",
+  "description": "Ground-truth benchmark suite for evaluating complementary verification techniques across AST parsing, static analysis, Semgrep, dependency auditing, property tests, domain rules, and LLM verification.",
+  "total_cases": 17,
+  "cases": [
+    {
+      "case_id": "BENCH-AUTH-001",
+      "language": "python",
+      "requirement": "Authentication tokens must be compared using constant-time comparison to prevent side-channel timing attacks.",
+      "source_code": "def verify_auth_token(provided_token: str, secret_token: str) -> bool:\n    # Insecure direct string comparison vulnerable to timing attacks\n    return provided_token == secret_token\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "AUTH-001-TIMING-ATTACK",
+          "severity": "high",
+          "message": "Potential timing attack vulnerability: String equality '==' used for cryptographic token comparison instead of hmac.compare_digest."
+        }
+      ],
+      "bug_category": "authentication",
+      "severity": "high",
+      "detection_methods_expected": ["semgrep", "llm_reasoning", "static_analysis"]
+    },
+    {
+      "case_id": "BENCH-AUTH-002",
+      "language": "python",
+      "requirement": "Authentication tokens must be compared using constant-time comparison to prevent side-channel timing attacks.",
+      "source_code": "import hmac\n\ndef verify_auth_token(provided_token: str, secret_token: str) -> bool:\n    # Secure constant-time comparison\n    return hmac.compare_digest(provided_token, secret_token)\n",
+      "expected_verdict": "PASS",
+      "expected_findings": [],
+      "bug_category": "authentication",
+      "severity": "info",
+      "detection_methods_expected": []
+    },
+    {
+      "case_id": "BENCH-AUTHZ-003",
+      "language": "python",
+      "requirement": "Users must only be allowed to view or download invoices belonging to their own organization (prevent BOLA/IDOR).",
+      "source_code": "def get_invoice(current_user: User, invoice_id: int, db: Database) -> Invoice:\n    # VULNERABILITY: IDOR / BOLA - fetches invoice by ID without verifying current_user ownership\n    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()\n    if not invoice:\n        raise NotFoundError('Invoice not found')\n    return invoice\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "AUTHZ-001-BOLA-IDOR",
+          "severity": "critical",
+          "message": "Broken Object Level Authorization (IDOR): Access to invoice record granted without verifying current_user.tenant_id == invoice.tenant_id."
+        }
+      ],
+      "bug_category": "authorization",
+      "severity": "critical",
+      "detection_methods_expected": ["llm_reasoning", "generated_tests"]
+    },
+    {
+      "case_id": "BENCH-AUTHZ-004",
+      "language": "python",
+      "requirement": "Users must only be allowed to view or download invoices belonging to their own organization (prevent BOLA/IDOR).",
+      "source_code": "def get_invoice(current_user: User, invoice_id: int, db: Database) -> Invoice:\n    # Secure: filters by invoice_id and verifies tenant ownership\n    invoice = db.query(Invoice).filter(\n        Invoice.id == invoice_id,\n        Invoice.tenant_id == current_user.tenant_id\n    ).first()\n    if not invoice:\n        raise NotFoundError('Invoice not found or access denied')\n    return invoice\n",
+      "expected_verdict": "PASS",
+      "expected_findings": [],
+      "bug_category": "authorization",
+      "severity": "info",
+      "detection_methods_expected": []
+    },
+    {
+      "case_id": "BENCH-INP-005",
+      "language": "python",
+      "requirement": "User search queries must be safely parameterized to prevent SQL injection.",
+      "source_code": "def search_users_by_email(email_query: str, db_connection) -> list[dict]:\n    # VULNERABILITY: Raw SQL query formatted with unescaped user string\n    query = f\"SELECT id, username, email FROM users WHERE email LIKE '%{email_query}%'\"\n    cursor = db_connection.cursor()\n    cursor.execute(query)\n    return cursor.fetchall()\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "INP-001-SQL-INJECTION",
+          "severity": "critical",
+          "message": "SQL Injection vulnerability: Dynamic SQL query constructed via f-string formatting with untrusted input."
+        }
+      ],
+      "bug_category": "input_validation",
+      "severity": "critical",
+      "detection_methods_expected": ["semgrep", "static_analysis", "llm_reasoning"]
+    },
+    {
+      "case_id": "BENCH-INP-006",
+      "language": "python",
+      "requirement": "User search queries must be safely parameterized to prevent SQL injection.",
+      "source_code": "def search_users_by_email(email_query: str, db_connection) -> list[dict]:\n    # Secure parameterized query with bound placeholder\n    query = \"SELECT id, username, email FROM users WHERE email LIKE %s\"\n    cursor = db_connection.cursor()\n    cursor.execute(query, (f\"%{email_query}%\",))\n    return cursor.fetchall()\n",
+      "expected_verdict": "PASS",
+      "expected_findings": [],
+      "bug_category": "input_validation",
+      "severity": "info",
+      "detection_methods_expected": []
+    },
+    {
+      "case_id": "BENCH-SEC-007",
+      "language": "javascript",
+      "requirement": "System utility functions must not execute shell commands with untrusted user parameters.",
+      "source_code": "const { exec } = require('child_process');\n\nfunction pingHost(hostAddress, callback) {\n    // VULNERABILITY: Command Injection via unescaped shell argument concatenation\n    exec('ping -c 4 ' + hostAddress, (error, stdout, stderr) => {\n        callback(error, stdout);\n    });\n}\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "SEC-001-COMMAND-INJECTION",
+          "severity": "critical",
+          "message": "Command Injection vulnerability: Untrusted hostAddress concatenated directly into child_process.exec command string."
+        }
+      ],
+      "bug_category": "security",
+      "severity": "critical",
+      "detection_methods_expected": ["semgrep", "llm_reasoning"]
+    },
+    {
+      "case_id": "BENCH-SEC-008",
+      "language": "python",
+      "requirement": "Untrusted network data payloads must never be deserialized using insecure pickle mechanisms.",
+      "source_code": "import pickle\n\ndef load_user_session(serialized_cookie_data: bytes) -> dict:\n    # VULNERABILITY: Arbitrary code execution via pickle.loads on untrusted client cookie\n    return pickle.loads(serialized_cookie_data)\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "SEC-002-INSECURE-DESERIALIZATION",
+          "severity": "critical",
+          "message": "Insecure Deserialization: pickle.loads executed on untrusted cookie data allows remote code execution."
+        }
+      ],
+      "bug_category": "security",
+      "severity": "critical",
+      "detection_methods_expected": ["semgrep", "static_analysis", "llm_reasoning"]
+    },
+    {
+      "case_id": "BENCH-LOGIC-009",
+      "language": "python",
+      "requirement": "Refund amounts must not exceed the original transaction value (capped at <= original_amount).",
+      "source_code": "def process_customer_refund(original_amount: float, requested_refund: float) -> float:\n    # FLAW: Off-by-one / inverted condition allowing refunds greater than original price\n    if requested_refund >= original_amount:  # Should be >\n        # Mistakenly applies refund without checking excess\n        return requested_refund\n    return original_amount\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "LOGIC-001-EXCESSIVE-REFUND",
+          "severity": "high",
+          "message": "Business logic flaw: Refund processing allows refund amount to exceed the original charged amount."
+        }
+      ],
+      "bug_category": "logic_errors",
+      "severity": "high",
+      "detection_methods_expected": ["generated_tests", "llm_reasoning"]
+    },
+    {
+      "case_id": "BENCH-LOGIC-010",
+      "language": "python",
+      "requirement": "Refund amounts must not exceed the original transaction value (capped at <= original_amount).",
+      "source_code": "def process_customer_refund(original_amount: float, requested_refund: float) -> float:\n    if requested_refund <= 0:\n        raise ValueError('Refund amount must be strictly positive')\n    if requested_refund > original_amount:\n        raise ValueError('Refund amount exceeds original transaction total')\n    return requested_refund\n",
+      "expected_verdict": "PASS",
+      "expected_findings": [],
+      "bug_category": "logic_errors",
+      "severity": "info",
+      "detection_methods_expected": []
+    },
+    {
+      "case_id": "BENCH-DEP-011",
+      "language": "python",
+      "requirement": "Project dependencies must not contain known high-severity CVE vulnerabilities.",
+      "source_code": "flask==0.12.2\nrequests==2.20.0\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "PYSEC-2019-179",
+          "severity": "high",
+          "message": "Known CVE in flask==0.12.2: Unexpected JSON parsing memory consumption vulnerability."
+        }
+      ],
+      "bug_category": "dependency_vulnerabilities",
+      "severity": "high",
+      "detection_methods_expected": ["dependency_scanner"]
+    },
+    {
+      "case_id": "BENCH-DEP-012",
+      "language": "javascript",
+      "requirement": "Project dependencies must not contain known high-severity CVE vulnerabilities.",
+      "source_code": "{\n  \"name\": \"secure-service\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"lodash\": \"^4.17.21\",\n    \"axios\": \"^1.7.0\"\n  }\n}\n",
+      "expected_verdict": "PASS",
+      "expected_findings": [],
+      "bug_category": "dependency_vulnerabilities",
+      "severity": "info",
+      "detection_methods_expected": []
+    },
+    {
+      "case_id": "BENCH-RFID-013",
+      "language": "cpp",
+      "requirement": "Authorized RFID UID must be verified byte-for-byte against an authorized whitelist before unlocking.",
+      "source_code": "#include <MFRC522.h>\nMFRC522 mfrc522(10, 9);\nbyte authorizedUID[] = {0xDE, 0xAD, 0xBE, 0xEF};\n\nvoid loop() {\n    if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) return;\n    \n    bool isAuthorized = true;\n    for (byte i = 0; i < 4; i++) {\n        if (mfrc522.uid.uidByte[i] != authorizedUID[i]) {\n            isAuthorized = false;\n            break;\n        }\n    }\n    \n    if (isAuthorized) {\n        digitalWrite(7, HIGH);\n        delay(1000);\n        digitalWrite(7, LOW);\n    }\n}\n",
+      "expected_verdict": "PASS",
+      "expected_findings": [],
+      "bug_category": "rfid_iot_authentication",
+      "severity": "info",
+      "detection_methods_expected": []
+    },
+    {
+      "case_id": "BENCH-RFID-014",
+      "language": "cpp",
+      "requirement": "Card presence must not grant access without reading and validating UID serial.",
+      "source_code": "#include <MFRC522.h>\nMFRC522 mfrc522(10, 9);\n\nvoid loop() {\n    // VULNERABILITY: Card detection triggers immediate unlock without UID check\n    if (mfrc522.PICC_IsNewCardPresent()) {\n        digitalWrite(7, HIGH);\n    }\n}\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "RFID-001-UNAUTHORIZED-UNLOCK",
+          "severity": "critical",
+          "message": "Critical RFID flaw: Door unlock triggered immediately on card presence without reading or checking UID."
+        }
+      ],
+      "bug_category": "rfid_iot_authentication",
+      "severity": "critical",
+      "detection_methods_expected": ["rfid_domain_rule", "semgrep", "llm_reasoning"]
+    },
+    {
+      "case_id": "BENCH-RFID-015",
+      "language": "cpp",
+      "requirement": "Unlock routine must strictly be enclosed inside an authorization conditional check.",
+      "source_code": "#include <MFRC522.h>\nMFRC522 mfrc522(10, 9);\nbyte masterCard[] = {0x12, 0x34, 0x56, 0x78};\n\nvoid loop() {\n    if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) return;\n    \n    bool match = (memcmp(mfrc522.uid.uidByte, masterCard, 4) == 0);\n    \n    // VULNERABILITY: unlock is called unconditionally outside if (match)\n    unlockDoor();\n}\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "RFID-002-UNGUARDED-UNLOCK",
+          "severity": "critical",
+          "message": "Unguarded RFID unlock: unlockDoor() executed unconditionally outside authorization check."
+        }
+      ],
+      "bug_category": "rfid_iot_authentication",
+      "severity": "critical",
+      "detection_methods_expected": ["rfid_domain_rule", "semgrep", "llm_reasoning"]
+    },
+    {
+      "case_id": "BENCH-RFID-016",
+      "language": "cpp",
+      "requirement": "Unauthorized or unknown RFID cards must be rejected and must not trigger unlock.",
+      "source_code": "#include <MFRC522.h>\nMFRC522 mfrc522(10, 9);\nbyte masterCard[] = {0xAA, 0xBB, 0xCC, 0xDD};\n\nvoid loop() {\n    if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) return;\n    \n    bool isMatch = (memcmp(mfrc522.uid.uidByte, masterCard, 4) == 0);\n    \n    // VULNERABILITY: Inverted logic - unlocks door when isMatch is FALSE\n    if (!isMatch) {\n        unlockDoor();\n    }\n}\n",
+      "expected_verdict": "FAIL",
+      "expected_findings": [
+        {
+          "rule_id": "RFID-004-INVERTED-AUTHORIZATION",
+          "severity": "critical",
+          "message": "Inverted authorization logic: Door is unlocked when UID match check fails (!isMatch)."
+        }
+      ],
+      "bug_category": "rfid_iot_authentication",
+      "severity": "critical",
+      "detection_methods_expected": ["generated_tests", "llm_reasoning", "rfid_domain_rule"]
+    },
+    {
+      "case_id": "BENCH-RFID-017",
+      "language": "cpp",
+      "requirement": "Unauthorized RFID cards must be recorded to security logs and denied access.",
+      "source_code": "#include <MFRC522.h>\nMFRC522 mfrc522(10, 9);\nbyte whitelist[2][4] = {{0x01, 0x02, 0x03, 0x04}, {0xAA, 0xBB, 0xCC, 0xDD}};\n\nvoid loop() {\n    if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) return;\n    \n    bool accessGranted = false;\n    for (int c = 0; c < 2; c++) {\n        if (memcmp(mfrc522.uid.uidByte, whitelist[c], 4) == 0) {\n            accessGranted = true;\n            break;\n        }\n    }\n    \n    if (accessGranted) {\n        unlockDoor();\n    } else {\n        logUnauthorizedAccessAttempt(mfrc522.uid.uidByte);\n    }\n}\n",
+      "expected_verdict": "PASS",
+      "expected_findings": [],
+      "bug_category": "rfid_iot_authentication",
+      "severity": "info",
+      "detection_methods_expected": []
+    }
+  ]
+}
